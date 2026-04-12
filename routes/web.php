@@ -41,6 +41,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/programmes/{id}', fn () => Inertia::render('Programmes/Show'))->name('programmes.show');
     Route::get('/programmes/{id}/edit', fn () => Inertia::render('Programmes/Edit'))->name('programmes.edit');
 
+    Route::get('/comptabilite', fn () => Inertia::render('Comptabilite/Index'))->name('comptabilite.index');
+    Route::get('/comptabilite/create', fn () => Inertia::render('Comptabilite/Create'))->name('comptabilite.create');
+    Route::get('/comptabilite/{id}', fn () => Inertia::render('Comptabilite/Show'))->name('comptabilite.show');
+    Route::get('/comptabilite/{id}/edit', fn () => Inertia::render('Comptabilite/Edit'))->name('comptabilite.edit');
+    Route::redirect('/transactions', '/comptabilite')->name('transactions.index');
+    Route::redirect('/rapport-comptabilite', '/comptabilite')->name('comptabilite.rapport');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
