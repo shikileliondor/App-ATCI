@@ -9,6 +9,8 @@ use App\Http\Requests\MembreUpdateRequest;
 use App\Models\Membre;
 use App\Services\MembreService;
 use Illuminate\Http\JsonResponse;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class MembreController extends Controller
 {
@@ -16,11 +18,10 @@ class MembreController extends Controller
     {
     }
 
-    public function index(): JsonResponse
+    public function index(): InertiaResponse
     {
-        return response()->json([
-            'message' => 'Liste des membres récupérée avec succès.',
-            'data' => $this->membreService->paginate(),
+        return Inertia::render('Membres/Index', [
+            'membres' => $this->membreService->paginate(),
         ]);
     }
 
