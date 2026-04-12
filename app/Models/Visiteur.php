@@ -12,9 +12,12 @@ class Visiteur extends Model
     protected $fillable = [
         'nom',
         'prenom',
+        'sexe',
         'telephone',
         'motif_visite',
         'date_visite',
+        'invite_par',
+        'adresse',
         'commentaire',
     ];
 
