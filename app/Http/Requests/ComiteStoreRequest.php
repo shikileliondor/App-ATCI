@@ -19,8 +19,7 @@ class ComiteStoreRequest extends FormRequest
         return [
             'nom' => ['required', 'string', 'max:150', Rule::unique('comites', 'nom')],
             'description' => ['nullable', 'string', 'max:1500'],
-            'departement_id' => ['required', 'integer', 'exists:departements,id'],
-            'statut' => ['required', Rule::in(['actif', 'inactif'])],
+            'statut' => ['sometimes', Rule::in(['actif', 'inactif'])],
         ];
     }
 }
