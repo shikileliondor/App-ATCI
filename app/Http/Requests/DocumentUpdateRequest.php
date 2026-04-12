@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class DocumentUpdateRequest extends FormRequest
 {
@@ -17,7 +18,7 @@ class DocumentUpdateRequest extends FormRequest
     {
         return [
             'titre' => ['sometimes', 'required', 'string', 'max:255'],
-            'type' => ['nullable', 'string', 'max:100'],
+            'type' => ['nullable', Rule::in(['certificat', 'attestation', 'autre'])],
             'fichier' => ['sometimes', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'],
             'categorie' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],

@@ -3,7 +3,11 @@ import Button from '@/Components/ui/Button';
 import FormInput from '@/Components/crud/FormInput';
 import FileUpload from '@/Components/crud/FileUpload';
 
-const typeOptions = ['pdf', 'image', 'word', 'autre'];
+const typeOptions = [
+    { value: 'certificat', label: 'Certificat' },
+    { value: 'attestation', label: 'Attestation' },
+    { value: 'autre', label: 'Autre' },
+];
 const categoryOptions = ['Administration', 'Finance', 'Ministère', 'Communication', 'Autre'];
 
 export default function DocumentsForm({ values, setValues, errors = {}, onSubmit, processing, isEdit = false }) {
@@ -27,7 +31,7 @@ export default function DocumentsForm({ values, setValues, errors = {}, onSubmit
                     >
                         <option value="">Sélectionner</option>
                         {typeOptions.map((option) => (
-                            <option key={option} value={option}>{option.toUpperCase()}</option>
+                            <option key={option.value} value={option.value}>{option.label}</option>
                         ))}
                     </select>
                     {errors.type ? <p className="text-xs text-red-600">{errors.type}</p> : null}
