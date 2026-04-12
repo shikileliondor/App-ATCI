@@ -46,14 +46,6 @@ export default function DocumentsForm({ values, setValues, errors = {}, onSubmit
                         ))}
                     </select>
                 </label>
-
-                <FormInput
-                    label="Uploadé par"
-                    value={values.uploaded_by}
-                    onChange={(event) => setValues((current) => ({ ...current, uploaded_by: event.target.value }))}
-                    placeholder="Nom du responsable"
-                    error={errors.uploaded_by}
-                />
             </div>
 
             <label className="block space-y-1.5">

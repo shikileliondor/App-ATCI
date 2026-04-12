@@ -16,7 +16,6 @@ export default function Edit() {
         type: '',
         categorie: '',
         description: '',
-        uploaded_by: '',
         fichier: null,
         existingFile: '',
     });
@@ -31,7 +30,6 @@ export default function Edit() {
                 type: doc.type ?? '',
                 categorie: doc.categorie ?? '',
                 description: doc.description ?? '',
-                uploaded_by: doc.uploaded_by ?? '',
                 existingFile: doc.fichier ?? '',
             }));
             setLoaded(true);
