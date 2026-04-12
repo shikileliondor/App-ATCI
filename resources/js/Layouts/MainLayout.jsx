@@ -10,16 +10,11 @@ export default function MainLayout({ title, subtitle, actionLabel, onAction, chi
 
     const userInitials = useMemo(() => {
         const name = auth?.user?.name ?? 'U';
-        return name
-            .split(' ')
-            .filter(Boolean)
-            .slice(0, 2)
-            .map((part) => part[0]?.toUpperCase())
-            .join('');
+        return name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('');
     }, [auth?.user?.name]);
 
     return (
-        <div className="min-h-screen bg-slate-100 text-slate-700">
+        <div className="min-h-screen bg-gray-50 text-gray-700">
             <Sidebar
                 isOpen={isSidebarOpen}
                 isCollapsed={isSidebarCollapsed}
@@ -27,7 +22,7 @@ export default function MainLayout({ title, subtitle, actionLabel, onAction, chi
                 onToggleCollapse={() => setIsSidebarCollapsed((current) => !current)}
             />
 
-            <div className={`transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-24' : 'lg:pl-72'}`}>
+            <div className={`transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
                 <Topbar
                     title={title}
                     subtitle={subtitle}
