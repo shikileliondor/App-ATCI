@@ -1,11 +1,10 @@
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import PageContainer from '@/Layouts/PageContainer';
 import DocumentsForm from '@/Pages/Documents/Form';
 
 export default function Create() {
-    const { props } = usePage();
     const [errors, setErrors] = useState({});
     const [processing, setProcessing] = useState(false);
     const [values, setValues] = useState({
@@ -13,7 +12,6 @@ export default function Create() {
         type: '',
         categorie: '',
         description: '',
-        uploaded_by: props.auth?.user?.name ?? '',
         fichier: null,
     });
 

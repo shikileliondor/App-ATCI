@@ -26,7 +26,9 @@ class DocumentController extends Controller
 
     public function store(DocumentStoreRequest $request): JsonResponse
     {
-        $document = $this->documentService->create($request->validated());
+        $validated = $request->validated();
+        $validated['uploaded_by'] = $request->user()?->name;
+        $document = $this->documentService->create($validated);
 
         return response()->json([
             'message' => 'Document créé avec succès.',
@@ -44,7 +46,9 @@ class DocumentController extends Controller
 
     public function update(DocumentUpdateRequest $request, Document $document): JsonResponse
     {
-        $updatedDocument = $this->documentService->update($document, $request->validated());
+        $validated = $request->validated();
+        $validated['uploaded_by'] = $request->user()?->name;
+        $updatedDocument = $this->documentService->update($document, $validated);
 
         return response()->json([
             'message' => 'Document mis à jour avec succès.',
