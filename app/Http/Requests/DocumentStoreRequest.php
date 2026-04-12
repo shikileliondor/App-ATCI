@@ -19,7 +19,9 @@ class DocumentStoreRequest extends FormRequest
             'titre' => ['required', 'string', 'max:255'],
             'type' => ['nullable', 'string', 'max:100'],
             'fichier' => ['required', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'],
+            'categorie' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'uploaded_by' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

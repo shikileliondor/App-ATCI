@@ -18,6 +18,8 @@ class CulteStoreRequest extends FormRequest
         return [
             'titre' => ['required', 'string', 'max:255'],
             'date_culte' => ['required', 'date'],
+            'heure' => ['nullable', 'date_format:H:i'],
+            'lieu' => ['nullable', 'string', 'max:255'],
             'theme' => ['nullable', 'string', 'max:255'],
             'pasteur' => ['nullable', 'string', 'max:255'],
             'hommes_adultes' => ['nullable', 'integer', 'min:0'],

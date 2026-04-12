@@ -24,19 +24,18 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::resource('membres', MembreController::class)->except(['show']);
-    Route::resource('departements', DepartementController::class);
+    Routhttps://github.com/shikileliondor/App-ATCI/pull/15/conflict?name=routes%252Fweb.php&ancestor_oid=b21a76ab3cf8e63d84bb9aa6725e1d3922425188&base_oid=57f04490886950319f8af103d669a3b3af0ba5ef&head_oid=0e7a0c83c7124a959d610e505c80794349c92533e::resource('departements', DepartementController::class);
     Route::resource('comites', ComiteController::class);
 
+    Route::get('/documents', fn () => Inertia::render('Documents/Index'))->name('documents.index');
+    Route::get('/documents/create', fn () => Inertia::render('Documents/Create'))->name('documents.create');
+    Route::get('/documents/{id}', fn () => Inertia::render('Documents/Show'))->name('documents.show');
+    Route::get('/documents/{id}/edit', fn () => Inertia::render('Documents/Edit'))->name('documents.edit');
 
-    Route::get('/visiteurs', fn () => Inertia::render('Visiteurs/Index'))->name('visiteurs.index');
-    Route::get('/visiteurs/create', fn () => Inertia::render('Visiteurs/Create'))->name('visiteurs.create');
-    Route::get('/visiteurs/{id}', fn (string $id) => Inertia::render('Visiteurs/Show', ['id' => $id]))->name('visiteurs.show');
-    Route::get('/visiteurs/{id}/edit', fn (string $id) => Inertia::render('Visiteurs/Edit', ['id' => $id]))->name('visiteurs.edit');
-
-    Route::get('/comptabilite', fn () => Inertia::render('Comptabilite/Index'))->name('comptabilite.index');
-    Route::get('/comptabilite/create', fn () => Inertia::render('Comptabilite/Create'))->name('comptabilite.create');
-    Route::get('/comptabilite/{id}', fn (string $id) => Inertia::render('Comptabilite/Show', ['id' => $id]))->name('comptabilite.show');
-    Route::get('/comptabilite/{id}/edit', fn (string $id) => Inertia::render('Comptabilite/Edit', ['id' => $id]))->name('comptabilite.edit');
+    Route::get('/cultes', fn () => Inertia::render('Cultes/Index'))->name('cultes.index');
+    Route::get('/cultes/create', fn () => Inertia::render('Cultes/Create'))->name('cultes.create');
+    Route::get('/cultes/{id}', fn () => Inertia::render('Cultes/Show'))->name('cultes.show');
+    Route::get('/cultes/{id}/edit', fn () => Inertia::render('Cultes/Edit'))->name('cultes.edit');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

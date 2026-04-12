@@ -19,7 +19,9 @@ class DocumentUpdateRequest extends FormRequest
             'titre' => ['sometimes', 'required', 'string', 'max:255'],
             'type' => ['nullable', 'string', 'max:100'],
             'fichier' => ['sometimes', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'],
+            'categorie' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'uploaded_by' => ['nullable', 'string', 'max:255'],
         ];
     }
 }
