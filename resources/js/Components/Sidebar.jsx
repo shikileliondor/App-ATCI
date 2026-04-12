@@ -11,7 +11,7 @@ const sections = [
     {
         title: 'ÉGLISE',
         items: [
-            { label: 'Membres', href: '#' },
+            { label: 'Membres', href: '/membres' },
             { label: 'Visiteurs', href: '#' },
             { label: 'Départements', href: '#' },
             { label: 'Comités', href: '#' },
