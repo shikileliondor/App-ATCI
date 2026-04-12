@@ -8,7 +8,6 @@ export default function CultesForm({ values, setValues, errors = {}, onSubmit, p
     return (
         <form onSubmit={onSubmit} className="space-y-5">
             <div className="grid gap-4 md:grid-cols-2">
-                <FormInput label="Nom du culte" value={values.titre} onChange={(event) => setValues((c) => ({ ...c, titre: event.target.value }))} error={errors.titre} />
                 <label className="space-y-1.5">
                     <span className="text-sm font-medium text-gray-700">Type</span>
                     <select value={values.theme} onChange={(event) => setValues((c) => ({ ...c, theme: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm">
@@ -19,7 +18,6 @@ export default function CultesForm({ values, setValues, errors = {}, onSubmit, p
                 <FormInput type="date" label="Date" value={values.date_culte} onChange={(event) => setValues((c) => ({ ...c, date_culte: event.target.value }))} error={errors.date_culte} />
                 <FormInput type="time" label="Heure" value={values.heure} onChange={(event) => setValues((c) => ({ ...c, heure: event.target.value }))} />
                 <FormInput label="Lieu" value={values.lieu} onChange={(event) => setValues((c) => ({ ...c, lieu: event.target.value }))} />
-                <FormInput label="Responsable" value={values.pasteur} onChange={(event) => setValues((c) => ({ ...c, pasteur: event.target.value }))} error={errors.pasteur} />
             </div>
 
             <label className="block space-y-1.5">

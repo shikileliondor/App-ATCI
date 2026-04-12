@@ -5,12 +5,10 @@ import PageContainer from '@/Layouts/PageContainer';
 import CultesForm from '@/Pages/Cultes/Form';
 
 const defaultValues = {
-    titre: '',
     theme: '',
     date_culte: '',
     heure: '',
     lieu: '',
-    pasteur: '',
     observations: '',
     hommes_adultes: 0,
     femmes_adultes: 0,
