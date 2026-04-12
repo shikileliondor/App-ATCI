@@ -38,7 +38,7 @@ class ProgrammeController extends Controller
     {
         return response()->json([
             'message' => 'Programme récupéré avec succès.',
-            'data' => $this->programmeService->findOrFail($programme->id),
+            'data' => $this->programmeService->getProgrammeDashboard($programme->id),
         ]);
     }
 
