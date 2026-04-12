@@ -14,12 +14,8 @@ class ComiteService
     public function paginate(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
         return Comite::query()
-            ->with('departement:id,nom')
             ->when($filters['search'] ?? null, function (Builder $query, string $search): void {
-                $query->where(function (Builder $builder) use ($search): void {
-                    $builder->where('nom', 'like', "%{$search}%")
-                        ->orWhereHas('departement', fn (Builder $query) => $query->where('nom', 'like', "%{$search}%"));
-                });
+                $query->where('nom', 'like', "%{$search}%");
             })
             ->when($filters['statut'] ?? null, fn (Builder $query, string $statut) => $query->where('statut', $statut))
             ->latest()

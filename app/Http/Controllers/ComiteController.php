@@ -7,7 +7,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ComiteStoreRequest;
 use App\Http\Requests\ComiteUpdateRequest;
 use App\Models\Comite;
-use App\Models\Departement;
 use App\Services\ComiteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -33,9 +32,7 @@ class ComiteController extends Controller
 
     public function create(): InertiaResponse
     {
-        return Inertia::render('Comites/Create', [
-            'departements' => Departement::query()->select('id', 'nom')->orderBy('nom')->get(),
-        ]);
+        return Inertia::render('Comites/Create');
     }
 
     public function store(ComiteStoreRequest $request): JsonResponse|RedirectResponse
@@ -53,18 +50,17 @@ class ComiteController extends Controller
     {
         if (! $request->expectsJson() && ! $request->is('api/*')) {
             return Inertia::render('Comites/Show', [
-                'comite' => $comite->load('departement:id,nom'),
+                'comite' => $comite,
             ]);
         }
 
-        return response()->json(['data' => $comite->load('departement:id,nom'), 'message' => 'Comité récupéré avec succès.']);
+        return response()->json(['data' => $comite, 'message' => 'Comité récupéré avec succès.']);
     }
 
     public function edit(Comite $comite): InertiaResponse
     {
         return Inertia::render('Comites/Edit', [
             'comite' => $comite,
-            'departements' => Departement::query()->select('id', 'nom')->orderBy('nom')->get(),
         ]);
     }
 

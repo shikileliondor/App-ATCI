@@ -14,7 +14,6 @@ class Comite extends Model
     protected $fillable = [
         'nom',
         'description',
-        'departement_id',
         'statut',
     ];
 
