@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { BookOpen, Building2, CalendarDays, FolderOpen, LayoutDashboard, Settings, Users } from '@/Components/Icons';
+import { BookOpen, Building2, CalendarDays, Flame, FolderOpen, LayoutDashboard, Settings, Users } from '@/Components/Icons';
 
 const sections = [
     {
@@ -17,7 +17,10 @@ const sections = [
     },
     {
         title: 'SPIRITUEL',
-        items: [{ label: 'Cultes', href: '/cultes', icon: CalendarDays }],
+        items: [
+            { label: 'Cultes', href: '/cultes', icon: CalendarDays },
+            { label: 'Programmes de prière', href: '/programmes', icon: Flame },
+        ],
     },
     { title: 'PARAMÈTRES', items: [{ label: 'Paramètres', href: '#', icon: Settings }] },
 ];
