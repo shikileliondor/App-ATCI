@@ -27,6 +27,16 @@ Route::middleware('auth')->group(function () {
     Route::resource('departements', DepartementController::class);
     Route::resource('comites', ComiteController::class);
 
+    Route::get('/documents', fn () => Inertia::render('Documents/Index'))->name('documents.index');
+    Route::get('/documents/create', fn () => Inertia::render('Documents/Create'))->name('documents.create');
+    Route::get('/documents/{id}', fn () => Inertia::render('Documents/Show'))->name('documents.show');
+    Route::get('/documents/{id}/edit', fn () => Inertia::render('Documents/Edit'))->name('documents.edit');
+
+    Route::get('/cultes', fn () => Inertia::render('Cultes/Index'))->name('cultes.index');
+    Route::get('/cultes/create', fn () => Inertia::render('Cultes/Create'))->name('cultes.create');
+    Route::get('/cultes/{id}', fn () => Inertia::render('Cultes/Show'))->name('cultes.show');
+    Route::get('/cultes/{id}/edit', fn () => Inertia::render('Cultes/Edit'))->name('cultes.edit');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

@@ -18,6 +18,8 @@ class CulteUpdateRequest extends FormRequest
         return [
             'titre' => ['sometimes', 'required', 'string', 'max:255'],
             'date_culte' => ['sometimes', 'required', 'date'],
+            'heure' => ['nullable', 'date_format:H:i'],
+            'lieu' => ['nullable', 'string', 'max:255'],
             'theme' => ['nullable', 'string', 'max:255'],
             'pasteur' => ['nullable', 'string', 'max:255'],
             'hommes_adultes' => ['sometimes', 'integer', 'min:0'],

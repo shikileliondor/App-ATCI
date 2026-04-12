@@ -12,6 +12,8 @@ class Culte extends Model
     protected $fillable = [
         'titre',
         'date_culte',
+        'heure',
+        'lieu',
         'theme',
         'pasteur',
         'hommes_adultes',

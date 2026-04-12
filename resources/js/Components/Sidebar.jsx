@@ -1,26 +1,30 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { BookOpen, Building2, CalendarDays, FolderOpen, LayoutDashboard, Settings, Users } from '@/Components/Icons';
 
 const sections = [
     {
         title: 'PRINCIPAL',
-        items: [{ label: 'Tableau de bord', href: '/dashboard', icon: '▦' }, { label: 'Notifications', href: '#', icon: '◉' }],
+        items: [{ label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard }],
     },
     {
         title: 'ÉGLISE',
-        items: [{ label: 'Membres', href: '/membres', icon: '👥' }, { label: 'Visiteurs', href: '#', icon: '👤' }],
+        items: [{ label: 'Membres', href: '/membres', icon: Users }],
     },
     {
         title: 'ADMINISTRATION',
-        items: [{ label: 'Comptabilité', href: '#', icon: '💼' }, { label: 'Documents', href: '#', icon: '📄' }],
+        items: [{ label: 'Documents', href: '/documents', icon: FolderOpen }],
     },
-    { title: 'SPIRITUEL', items: [{ label: 'Cultes', href: '#', icon: '✝' }] },
-    { title: 'PARAMÈTRES', items: [{ label: 'Paramètres', href: '#', icon: '⚙' }] },
+    {
+        title: 'SPIRITUEL',
+        items: [{ label: 'Cultes', href: '/cultes', icon: CalendarDays }],
+    },
+    { title: 'PARAMÈTRES', items: [{ label: 'Paramètres', href: '#', icon: Settings }] },
 ];
 
 const gestionItems = [
-    { label: 'Départements', href: '/departements', icon: '🏢' },
-    { label: 'Comités', href: '/comites', icon: '🧩' },
+    { label: 'Départements', href: '/departements', icon: Building2 },
+    { label: 'Comités', href: '/comites', icon: BookOpen },
 ];
 
 export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
@@ -30,13 +34,14 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
     const [isGestionOpen, setIsGestionOpen] = useState(isGestionActive);
 
     const renderItem = (item) => {
+        const Icon = item.icon;
         const active = url === item.href || url.startsWith(`${item.href}/`);
         const linkClass = `flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${active ? 'bg-[#1a56a0]/10 font-medium text-[#1a56a0]' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`;
 
         return item.href.startsWith('/') ? (
-            <Link key={item.label} href={item.href} className={linkClass}><span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-xs">{item.icon}</span>{!isCollapsed ? <span>{item.label}</span> : null}</Link>
+            <Link key={item.label} href={item.href} className={linkClass}><span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-xs"><Icon size={14} /></span>{!isCollapsed ? <span>{item.label}</span> : null}</Link>
         ) : (
-            <a key={item.label} href={item.href} className={linkClass}><span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-xs">{item.icon}</span>{!isCollapsed ? <span>{item.label}</span> : null}</a>
+            <a key={item.label} href={item.href} className={linkClass}><span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-xs"><Icon size={14} /></span>{!isCollapsed ? <span>{item.label}</span> : null}</a>
         );
     };
 
@@ -53,7 +58,7 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                     <div>
                         {!isCollapsed ? <p className="mb-2 px-2 text-xs uppercase text-gray-500">GESTION</p> : null}
                         <button type="button" onClick={() => setIsGestionOpen((v) => !v)} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${isGestionActive ? 'bg-[#1a56a0]/10 text-[#1a56a0]' : 'text-gray-600 hover:bg-gray-100'}`}>
-                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-xs">📁</span>
+                            <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gray-100 text-xs"><BookOpen size={14} /></span>
                             {!isCollapsed ? <><span className="flex-1 text-left">Gestion</span><span>{isGestionOpen ? '▾' : '▸'}</span></> : null}
                         </button>
                         {(!isCollapsed && isGestionOpen) ? <div className="mt-1 space-y-1 pl-4">{gestionItems.map(renderItem)}</div> : null}

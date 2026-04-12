@@ -31,6 +31,7 @@ class DocumentService
                 /** @var UploadedFile $file */
                 $file = $data['fichier'];
                 $data['fichier'] = $file->store('documents', 'public');
+                $data['file_size'] = round($file->getSize() / 1024, 1).' KB';
 
                 return Document::query()->create($data);
             });
@@ -48,7 +49,9 @@ class DocumentService
                         Storage::disk('public')->delete($document->fichier);
                     }
 
-                    $data['fichier'] = $data['fichier']->store('documents', 'public');
+                    $file = $data['fichier'];
+                    $data['fichier'] = $file->store('documents', 'public');
+                    $data['file_size'] = round($file->getSize() / 1024, 1).' KB';
                 }
 
                 $document->fill($data);

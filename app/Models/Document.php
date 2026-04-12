@@ -13,6 +13,9 @@ class Document extends Model
         'titre',
         'type',
         'fichier',
+        'categorie',
         'description',
+        'uploaded_by',
+        'file_size',
     ];
 }
