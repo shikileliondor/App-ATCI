@@ -7,12 +7,12 @@ function Card({ children, className = '' }) {
     return <div className={`rounded-2xl border border-gray-200 bg-white p-6 shadow-sm ${className}`}>{children}</div>;
 }
 
-export default function Index() {
+export default function Index({ membres }) {
     const { props } = usePage();
     const [deletingId, setDeletingId] = useState(null);
 
-    const membres = useMemo(() => {
-        const source = props.membres;
+    const membresList = useMemo(() => {
+        const source = membres;
 
         if (Array.isArray(source)) {
             return source;
@@ -22,12 +22,8 @@ export default function Index() {
             return source.data;
         }
 
-        if (Array.isArray(props.data)) {
-            return props.data;
-        }
-
         return [];
-    }, [props.data, props.membres]);
+    }, [membres]);
 
     const successMessage = props.flash?.success ?? props.message;
 
@@ -56,7 +52,7 @@ export default function Index() {
                     <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h2 className="text-lg font-semibold text-gray-900">Liste des membres</h2>
-                            <p className="text-sm text-gray-500">{membres.length} membre(s) enregistré(s).</p>
+                            <p className="text-sm text-gray-500">{membresList.length} membre(s) enregistré(s).</p>
                         </div>
                         <Link
                             href="/membres/create"
@@ -66,7 +62,7 @@ export default function Index() {
                         </Link>
                     </div>
 
-                    {membres.length === 0 ? (
+                    {membresList.length === 0 ? (
                         <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center">
                             <p className="text-base font-medium text-gray-800">Aucun membre pour le moment</p>
                             <p className="mt-1 text-sm text-gray-500">Commencez par ajouter votre premier membre.</p>
@@ -76,18 +72,46 @@ export default function Index() {
                             <table className="min-w-full divide-y divide-gray-200 text-sm">
                                 <thead>
                                     <tr className="text-left text-xs uppercase tracking-wide text-gray-500">
-                                        <th className="px-4 py-3 font-medium">Nom</th>
-                                        <th className="px-4 py-3 font-medium">Email</th>
+                                        <th className="px-4 py-3 font-medium">Nom complet</th>
+                                        <th className="px-4 py-3 font-medium">Sexe</th>
+                                        <th className="px-4 py-3 font-medium">Naissance</th>
                                         <th className="px-4 py-3 font-medium">Téléphone</th>
+                                        <th className="px-4 py-3 font-medium">Email</th>
+                                        <th className="px-4 py-3 font-medium">Département</th>
+                                        <th className="px-4 py-3 font-medium">Comité</th>
+                                        <th className="px-4 py-3 font-medium">Adresse</th>
+                                        <th className="px-4 py-3 font-medium">Converti</th>
+                                        <th className="px-4 py-3 font-medium">Date conversion</th>
+                                        <th className="px-4 py-3 font-medium">Baptisé</th>
+                                        <th className="px-4 py-3 font-medium">Date baptême</th>
+                                        <th className="px-4 py-3 font-medium">Situation</th>
+                                        <th className="px-4 py-3 font-medium">Profession</th>
+                                        <th className="px-4 py-3 font-medium">Statut</th>
+                                        <th className="px-4 py-3 font-medium">Inscription</th>
+                                        <th className="px-4 py-3 font-medium">Observations</th>
                                         <th className="px-4 py-3 text-right font-medium">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
-                                    {membres.map((membre) => (
+                                    {membresList.map((membre) => (
                                         <tr key={membre.id} className="transition hover:bg-gray-50">
-                                            <td className="px-4 py-3 font-medium text-gray-900">{membre.nom}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.email}</td>
+                                            <td className="px-4 py-3 font-medium text-gray-900">{`${membre.nom} ${membre.prenom ?? ''}`.trim()}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.sexe ?? '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.date_naissance ?? '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.telephone || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.email || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.departement?.nom || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.comite?.nom || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.adresse || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.est_converti ? 'Oui' : 'Non'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.date_conversion || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.est_baptise ? 'Oui' : 'Non'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.date_bapteme || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.situation_matrimoniale || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.profession || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.statut || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.date_inscription || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.observations || '-'}</td>
                                             <td className="px-4 py-3">
                                                 <div className="flex justify-end gap-2">
                                                     <Link
@@ -112,6 +136,25 @@ export default function Index() {
                             </table>
                         </div>
                     )}
+
+                    {Array.isArray(membres?.links) && membres.links.length > 0 ? (
+                        <div className="mt-5 flex flex-wrap gap-2">
+                            {membres.links.map((link, index) => (
+                                <button
+                                    type="button"
+                                    key={`${link.label}-${index}`}
+                                    disabled={!link.url || link.active}
+                                    onClick={() => link.url && router.visit(link.url)}
+                                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                                        link.active
+                                            ? 'bg-[#1a56a0] text-white'
+                                            : 'border border-gray-300 text-gray-700 hover:border-[#1a56a0] hover:text-[#1a56a0]'
+                                    } disabled:cursor-not-allowed disabled:opacity-60`}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                />
+                            ))}
+                        </div>
+                    ) : null}
                 </Card>
             </PageContainer>
         </MainLayout>
