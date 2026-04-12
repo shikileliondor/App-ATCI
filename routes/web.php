@@ -24,7 +24,7 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::resource('membres', MembreController::class)->except(['show']);
-    Route::resource('departements', DepartementController::class);
+    Routhttps://github.com/shikileliondor/App-ATCI/pull/15/conflict?name=routes%252Fweb.php&ancestor_oid=b21a76ab3cf8e63d84bb9aa6725e1d3922425188&base_oid=57f04490886950319f8af103d669a3b3af0ba5ef&head_oid=0e7a0c83c7124a959d610e505c80794349c92533e::resource('departements', DepartementController::class);
     Route::resource('comites', ComiteController::class);
 
     Route::get('/documents', fn () => Inertia::render('Documents/Index'))->name('documents.index');
