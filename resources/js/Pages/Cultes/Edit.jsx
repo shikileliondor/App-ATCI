@@ -15,12 +15,10 @@ export default function Edit() {
         window.axios.get(`/api/cultes/${id}`).then((response) => {
             const culte = response.data?.data;
             setValues({
-                titre: culte.titre ?? '',
                 theme: culte.theme ?? '',
                 date_culte: culte.date_culte ?? '',
                 heure: culte.heure ?? '',
                 lieu: culte.lieu ?? '',
-                pasteur: culte.pasteur ?? '',
                 observations: culte.observations ?? '',
                 hommes_adultes: culte.hommes_adultes ?? 0,
                 femmes_adultes: culte.femmes_adultes ?? 0,

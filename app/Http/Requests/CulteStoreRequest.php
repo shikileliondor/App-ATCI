@@ -16,7 +16,7 @@ class CulteStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'titre' => ['required', 'string', 'max:255'],
+            'titre' => ['nullable', 'string', 'max:255'],
             'date_culte' => ['required', 'date'],
             'heure' => ['nullable', 'date_format:H:i'],
             'lieu' => ['nullable', 'string', 'max:255'],

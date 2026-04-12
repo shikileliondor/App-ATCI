@@ -64,6 +64,10 @@ class CulteService
     {
         $stats = ['hommes_adultes', 'femmes_adultes', 'jeunes_hommes', 'jeunes_filles', 'enfants', 'visiteurs'];
 
+        if (! array_key_exists('titre', $data) || trim((string) $data['titre']) === '') {
+            $data['titre'] = $existingCulte?->titre ?: $this->buildDefaultTitle($data);
+        }
+
         if (! array_key_exists('total_personnes', $data) || $data['total_personnes'] === null || $data['total_personnes'] === '') {
             $sum = 0;
             foreach ($stats as $field) {
@@ -78,5 +82,16 @@ class CulteService
         }
 
         return $data;
+    }
+
+    private function buildDefaultTitle(array $data): string
+    {
+        $date = $data['date_culte'] ?? null;
+
+        if ($date) {
+            return sprintf('Culte du %s', $date);
+        }
+
+        return 'Culte';
     }
 }

@@ -16,7 +16,7 @@ class CulteUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'titre' => ['sometimes', 'required', 'string', 'max:255'],
+            'titre' => ['sometimes', 'nullable', 'string', 'max:255'],
             'date_culte' => ['sometimes', 'required', 'date'],
             'heure' => ['nullable', 'date_format:H:i'],
             'lieu' => ['nullable', 'string', 'max:255'],
