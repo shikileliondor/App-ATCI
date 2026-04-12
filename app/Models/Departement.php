@@ -13,10 +13,16 @@ class Departement extends Model
     protected $fillable = [
         'nom',
         'description',
+        'statut',
     ];
 
     public function membres(): HasMany
     {
         return $this->hasMany(Membre::class);
+    }
+
+    public function comites(): HasMany
+    {
+        return $this->hasMany(Comite::class);
     }
 }
