@@ -15,7 +15,10 @@ class MembreService
 {
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
-        return Membre::query()->latest()->paginate($perPage);
+        return Membre::query()
+            ->with(['departement:id,nom', 'comite:id,nom'])
+            ->latest()
+            ->paginate($perPage);
     }
 
     public function findOrFail(int $id): Membre

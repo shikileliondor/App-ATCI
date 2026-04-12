@@ -72,18 +72,46 @@ export default function Index({ membres }) {
                             <table className="min-w-full divide-y divide-gray-200 text-sm">
                                 <thead>
                                     <tr className="text-left text-xs uppercase tracking-wide text-gray-500">
-                                        <th className="px-4 py-3 font-medium">Nom</th>
-                                        <th className="px-4 py-3 font-medium">Email</th>
+                                        <th className="px-4 py-3 font-medium">Nom complet</th>
+                                        <th className="px-4 py-3 font-medium">Sexe</th>
+                                        <th className="px-4 py-3 font-medium">Naissance</th>
                                         <th className="px-4 py-3 font-medium">Téléphone</th>
+                                        <th className="px-4 py-3 font-medium">Email</th>
+                                        <th className="px-4 py-3 font-medium">Département</th>
+                                        <th className="px-4 py-3 font-medium">Comité</th>
+                                        <th className="px-4 py-3 font-medium">Adresse</th>
+                                        <th className="px-4 py-3 font-medium">Converti</th>
+                                        <th className="px-4 py-3 font-medium">Date conversion</th>
+                                        <th className="px-4 py-3 font-medium">Baptisé</th>
+                                        <th className="px-4 py-3 font-medium">Date baptême</th>
+                                        <th className="px-4 py-3 font-medium">Situation</th>
+                                        <th className="px-4 py-3 font-medium">Profession</th>
+                                        <th className="px-4 py-3 font-medium">Statut</th>
+                                        <th className="px-4 py-3 font-medium">Inscription</th>
+                                        <th className="px-4 py-3 font-medium">Observations</th>
                                         <th className="px-4 py-3 text-right font-medium">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {membresList.map((membre) => (
                                         <tr key={membre.id} className="transition hover:bg-gray-50">
-                                            <td className="px-4 py-3 font-medium text-gray-900">{membre.nom}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.email}</td>
+                                            <td className="px-4 py-3 font-medium text-gray-900">{`${membre.nom} ${membre.prenom ?? ''}`.trim()}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.sexe ?? '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.date_naissance ?? '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.telephone || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.email || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.departement?.nom || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.comite?.nom || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.adresse || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.est_converti ? 'Oui' : 'Non'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.date_conversion || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.est_baptise ? 'Oui' : 'Non'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.date_bapteme || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.situation_matrimoniale || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.profession || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.statut || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.date_inscription || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.observations || '-'}</td>
                                             <td className="px-4 py-3">
                                                 <div className="flex justify-end gap-2">
                                                     <Link
