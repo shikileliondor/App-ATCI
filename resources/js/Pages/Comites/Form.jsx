@@ -1,6 +1,8 @@
 import { Link } from '@inertiajs/react';
 
 export default function Form({ data, setData, departements = [], errors, processing, onSubmit, submitLabel, cancelHref = '/comites' }) {
+    const hasDepartements = departements.length > 0;
+
     return (
         <form onSubmit={onSubmit} className="space-y-5">
             <div className="grid gap-5 sm:grid-cols-2">
@@ -11,10 +13,11 @@ export default function Form({ data, setData, departements = [], errors, process
                 </div>
                 <div>
                     <label htmlFor="departement_id" className="mb-1.5 block text-sm font-medium text-gray-700">Département associé</label>
-                    <select id="departement_id" value={data.departement_id} onChange={(e) => setData('departement_id', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]">
+                    <select id="departement_id" value={data.departement_id} onChange={(e) => setData('departement_id', e.target.value)} disabled={!hasDepartements} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0] disabled:cursor-not-allowed disabled:bg-gray-100">
                         <option value="">Sélectionner...</option>
                         {departements.map((dep) => <option key={dep.id} value={dep.id}>{dep.nom}</option>)}
                     </select>
+                    {!hasDepartements ? <p className="mt-1.5 text-sm text-amber-600">Aucun département disponible. Créez d'abord un département avant d'ajouter un comité.</p> : null}
                     {errors.departement_id ? <p className="mt-1.5 text-sm text-red-600">{errors.departement_id}</p> : null}
                 </div>
             </div>
@@ -32,7 +35,7 @@ export default function Form({ data, setData, departements = [], errors, process
             </div>
             <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:justify-end">
                 <Link href={cancelHref} className="inline-flex items-center justify-center rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50">Annuler</Link>
-                <button type="submit" disabled={processing} className="inline-flex items-center justify-center rounded-xl bg-[#1a56a0] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#174b8a] disabled:opacity-60">{processing ? 'Traitement...' : submitLabel}</button>
+                <button type="submit" disabled={processing || !hasDepartements} className="inline-flex items-center justify-center rounded-xl bg-[#1a56a0] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#174b8a] disabled:opacity-60">{processing ? 'Traitement...' : submitLabel}</button>
             </div>
         </form>
     );
