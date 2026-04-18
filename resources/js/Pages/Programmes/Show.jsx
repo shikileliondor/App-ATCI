@@ -171,10 +171,6 @@ export default function Show() {
                                             <p className="text-xs uppercase text-gray-500">Lieu</p>
                                             <p className="text-sm font-medium text-gray-800">{programme.lieu}</p>
                                         </div>
-                                        <div>
-                                            <p className="text-xs uppercase text-gray-500">Heure</p>
-                                            <p className="text-sm font-medium text-gray-800">{programme.heure || '-'}</p>
-                                        </div>
                                     </div>
 
                                     <div className="mt-6 rounded-xl border border-gray-100 bg-gray-50 p-4">
@@ -185,14 +181,14 @@ export default function Show() {
 
                                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                                     <h3 className="text-lg font-semibold text-gray-900">Graphique d'évolution</h3>
-                                    <p className="mb-4 text-sm text-gray-500">Suivi des participants par date.</p>
+                                    <p className="mb-4 text-sm text-gray-500">Suivi du total journalier par date.</p>
                                     <PresenceChart presences={sortedPresences} />
                                 </div>
 
                                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                                     <div className="mb-4 flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900">Tableau des présences</h3>
-                                        <Button onClick={() => { setEditingPresence(null); setOpenForm(true); }}>Ajouter présence</Button>
+                                        <h3 className="text-lg font-semibold text-gray-900">Tableau des statistiques journalières</h3>
+                                        <Button onClick={() => { setEditingPresence(null); setOpenForm(true); }}>Ajouter un jour</Button>
                                     </div>
                                     <PresenceTable
                                         presences={sortedPresences}

@@ -9,10 +9,10 @@ export default function Create() {
         nom: '',
         date_debut: '',
         date_fin: '',
-        heure: '',
         lieu: '',
         description: '',
         statut: 'actif',
+        presences: [],
     });
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState({});
@@ -49,7 +49,7 @@ export default function Create() {
         <MainLayout title="Créer un programme" subtitle="Ajoutez un programme de prière autonome">
             <Head title="Créer programme" />
             <PageContainer>
-                <div className="mx-auto max-w-4xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                <div className="mx-auto max-w-6xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <ProgrammesForm values={data} setValues={setData} errors={errors} onSubmit={submit} processing={processing} submitLabel="Créer le programme" />
                 </div>
             </PageContainer>

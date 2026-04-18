@@ -17,7 +17,13 @@ class ProgrammePresenceStoreRequest extends FormRequest
     {
         return [
             'date' => ['required', 'date'],
-            'nombre_participants' => ['required', 'integer', 'min:0'],
+            'nombre_participants' => ['nullable', 'integer', 'min:0'],
+            'hommes_adultes' => ['required', 'integer', 'min:0'],
+            'femmes_adultes' => ['required', 'integer', 'min:0'],
+            'jeunes_hommes' => ['required', 'integer', 'min:0'],
+            'jeunes_filles' => ['required', 'integer', 'min:0'],
+            'enfants' => ['required', 'integer', 'min:0'],
+            'visiteurs' => ['required', 'integer', 'min:0'],
         ];
     }
 }

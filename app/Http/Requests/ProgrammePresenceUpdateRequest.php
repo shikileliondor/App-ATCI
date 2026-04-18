@@ -17,7 +17,13 @@ class ProgrammePresenceUpdateRequest extends FormRequest
     {
         return [
             'date' => ['sometimes', 'required', 'date'],
-            'nombre_participants' => ['sometimes', 'required', 'integer', 'min:0'],
+            'nombre_participants' => ['nullable', 'integer', 'min:0'],
+            'hommes_adultes' => ['sometimes', 'required', 'integer', 'min:0'],
+            'femmes_adultes' => ['sometimes', 'required', 'integer', 'min:0'],
+            'jeunes_hommes' => ['sometimes', 'required', 'integer', 'min:0'],
+            'jeunes_filles' => ['sometimes', 'required', 'integer', 'min:0'],
+            'enfants' => ['sometimes', 'required', 'integer', 'min:0'],
+            'visiteurs' => ['sometimes', 'required', 'integer', 'min:0'],
         ];
     }
 }
