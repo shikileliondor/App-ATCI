@@ -46,6 +46,7 @@ export default function Edit() {
         if (!data.nom) nextErrors.nom = 'Le nom est requis.';
         if (!data.type) nextErrors.type = 'Le type est requis.';
         if (!data.date_debut) nextErrors.date_debut = 'La date de début est requise.';
+        if (!data.type) nextErrors.type = 'Le type est requis.';
         if (!data.date_fin) nextErrors.date_fin = 'La date de fin est requise.';
         if (data.date_debut && data.date_fin && new Date(data.date_fin) < new Date(data.date_debut)) {
             nextErrors.date_range = 'La date de fin doit être supérieure ou égale à la date de début.';

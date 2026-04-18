@@ -47,7 +47,7 @@ export default function Index() {
 
     const filtered = useMemo(() => {
         const filteredItems = items.filter((programme) => {
-            const inQuery = !query || [programme.nom, programme.lieu, programme.description]
+            const inQuery = !query || [programme.nom, programme.type, programme.lieu, programme.description]
                 .filter(Boolean)
                 .some((field) => field.toLowerCase().includes(query.toLowerCase()));
             const inStatus = !statusFilter || programme.statut === statusFilter;
@@ -136,8 +136,8 @@ export default function Index() {
 
                 <ConfirmDialog
                     open={Boolean(deleteTarget)}
-                    title="Supprimer ce programme ?"
-                    description={deleteTarget ? `Le programme "${deleteTarget.nom}" sera supprimé définitivement.` : ''}
+                    title="Supprimer cet événement ?"
+                    description={deleteTarget ? `L'événement "${deleteTarget.nom}" sera supprimé définitivement.` : ''}
                     onCancel={() => setDeleteTarget(null)}
                     onConfirm={remove}
                 />

@@ -19,7 +19,7 @@ const sections = [
         title: 'Spirituel',
         items: [
             { label: 'Cultes', href: '/cultes', icon: CalendarDays },
-            { label: 'Programmes de prière', href: '/programmes', icon: Flame },
+            { label: 'Événements (hors cultes)', href: '/programmes', icon: Flame },
         ],
     },
     { title: 'Paramètres', items: [{ label: 'Paramètres', href: '/settings', icon: Settings }] },
