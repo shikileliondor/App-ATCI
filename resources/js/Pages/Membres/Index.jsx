@@ -80,12 +80,11 @@ export default function Index({ membres }) {
                                         <th className="px-4 py-3 font-medium">Département</th>
                                         <th className="px-4 py-3 font-medium">Comité</th>
                                         <th className="px-4 py-3 font-medium">Adresse</th>
-                                        <th className="px-4 py-3 font-medium">Converti</th>
-                                        <th className="px-4 py-3 font-medium">Date conversion</th>
                                         <th className="px-4 py-3 font-medium">Baptisé</th>
                                         <th className="px-4 py-3 font-medium">Date baptême</th>
                                         <th className="px-4 py-3 font-medium">Situation</th>
                                         <th className="px-4 py-3 font-medium">Profession</th>
+                                        <th className="px-4 py-3 font-medium">Fonction</th>
                                         <th className="px-4 py-3 font-medium">Statut</th>
                                         <th className="px-4 py-3 font-medium">Inscription</th>
                                         <th className="px-4 py-3 font-medium">Observations</th>
@@ -103,12 +102,11 @@ export default function Index({ membres }) {
                                             <td className="px-4 py-3 text-gray-600">{membre.departement?.nom || '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.comite?.nom || '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.adresse || '-'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.est_converti ? 'Oui' : 'Non'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.date_conversion || '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.est_baptise ? 'Oui' : 'Non'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.date_bapteme || '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.situation_matrimoniale || '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.profession || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.fonction_eglise || '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.statut || '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.date_inscription || '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.observations || '-'}</td>
