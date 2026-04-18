@@ -1,5 +1,5 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import PageContainer from '@/Layouts/PageContainer';
 
@@ -26,7 +26,7 @@ export default function CommunicationIndex({ departements = [], comites = [], me
         recipient_mode: 'all',
         departement_id: '',
         comite_id: '',
-        member_ids: [],
+        selected_member_ids: [],
         template_id: '',
         message: '',
     });
@@ -36,13 +36,19 @@ export default function CommunicationIndex({ departements = [], comites = [], me
         content: '',
     });
 
-    const recipientCount = useMemo(() => {
-        if (sendForm.data.recipient_mode === 'all') return membres.length;
-        if (sendForm.data.recipient_mode === 'departement') return membres.filter((m) => String(m.departement_id || '') === String(sendForm.data.departement_id)).length;
-        if (sendForm.data.recipient_mode === 'comite') return membres.filter((m) => String(m.comite_id || '') === String(sendForm.data.comite_id)).length;
+    const filteredMembers = useMemo(() => {
+        if (sendForm.data.recipient_mode === 'all') return membres;
+        if (sendForm.data.recipient_mode === 'departement') return membres.filter((m) => String(m.departement_id || '') === String(sendForm.data.departement_id));
+        if (sendForm.data.recipient_mode === 'comite') return membres.filter((m) => String(m.comite_id || '') === String(sendForm.data.comite_id));
 
-        return sendForm.data.member_ids.length;
-    }, [membres, sendForm.data]);
+        return membres;
+    }, [membres, sendForm.data.recipient_mode, sendForm.data.departement_id, sendForm.data.comite_id]);
+
+    useEffect(() => {
+        sendForm.setData('selected_member_ids', filteredMembers.map((membre) => membre.id));
+    }, [filteredMembers]);
+
+    const recipientCount = sendForm.data.selected_member_ids.length;
 
     const onChangeTemplateSelection = (id) => {
         sendForm.setData('template_id', id);
@@ -53,8 +59,11 @@ export default function CommunicationIndex({ departements = [], comites = [], me
     };
 
     const toggleMember = (memberId) => {
-        const exists = sendForm.data.member_ids.includes(memberId);
-        sendForm.setData('member_ids', exists ? sendForm.data.member_ids.filter((id) => id !== memberId) : [...sendForm.data.member_ids, memberId]);
+        const exists = sendForm.data.selected_member_ids.includes(memberId);
+        sendForm.setData(
+            'selected_member_ids',
+            exists ? sendForm.data.selected_member_ids.filter((id) => id !== memberId) : [...sendForm.data.selected_member_ids, memberId]
+        );
     };
 
     const submitMessage = (event) => {
@@ -120,16 +129,22 @@ export default function CommunicationIndex({ departements = [], comites = [], me
                                 </select>
                             ) : null}
 
-                            {sendForm.data.recipient_mode === 'custom' ? (
-                                <div className="max-h-40 space-y-1 overflow-y-auto rounded-xl border border-gray-200 p-2">
-                                    {membres.map((membre) => (
+                            <div className="space-y-2 rounded-xl border border-gray-200 p-2">
+                                <p className="px-1 text-xs font-medium text-gray-600">Choisir les contacts avant envoi</p>
+                                <div className="max-h-40 space-y-1 overflow-y-auto">
+                                    {filteredMembers.map((membre) => (
                                         <label key={membre.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-slate-50">
-                                            <input type="checkbox" checked={sendForm.data.member_ids.includes(membre.id)} onChange={() => toggleMember(membre.id)} />
+                                            <input
+                                                type="checkbox"
+                                                checked={sendForm.data.selected_member_ids.includes(membre.id)}
+                                                onChange={() => toggleMember(membre.id)}
+                                            />
                                             <span>{membre.nom} {membre.prenom}</span>
                                         </label>
                                     ))}
                                 </div>
-                            ) : null}
+                                {filteredMembers.length === 0 ? <p className="px-1 text-xs text-gray-500">Aucun contact pour ce filtre.</p> : null}
+                            </div>
 
                             <select value={sendForm.data.template_id} onChange={(event) => onChangeTemplateSelection(event.target.value)} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm">
                                 <option value="">Utiliser un template</option>
