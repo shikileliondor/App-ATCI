@@ -28,7 +28,7 @@ export default function MainLayout({ title, subtitle, actionLabel, onAction, chi
                 branding={branding}
             />
 
-            <div className={`transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'}`}>
+            <div className={`transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'} lg:ml-3`}>
                 <Topbar
                     title={title}
                     subtitle={subtitle}
