@@ -189,6 +189,20 @@ export default function Index({ membres }) {
                         </div>
 
                         <div className="space-y-6 p-5">
+                            <div className="flex justify-center">
+                                {selectedMembre.photo_path ? (
+                                    <img
+                                        src={`/storage/${selectedMembre.photo_path}`}
+                                        alt={`Photo de ${`${selectedMembre.nom} ${selectedMembre.prenom ?? ''}`.trim()}`}
+                                        className="h-28 w-28 rounded-full border-4 border-white object-cover shadow-md ring-1 ring-gray-200"
+                                    />
+                                ) : (
+                                    <div className="flex h-28 w-28 items-center justify-center rounded-full bg-gray-100 text-3xl font-semibold text-gray-500 ring-1 ring-gray-200">
+                                        {`${selectedMembre.nom?.[0] ?? ''}${selectedMembre.prenom?.[0] ?? ''}`.toUpperCase() || '?'}
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <InfoItem label="Sexe" value={selectedMembre.sexe} />
                                 <InfoItem label="Statut" value={selectedMembre.statut} />
