@@ -22,7 +22,7 @@ const sections = [
             { label: 'Programmes de prière', href: '/programmes', icon: Flame },
         ],
     },
-    { title: 'PARAMÈTRES', items: [{ label: 'Paramètres', href: '#', icon: Settings }] },
+    { title: 'PARAMÈTRES', items: [{ label: 'Paramètres', href: '/settings', icon: Settings }] },
 ];
 
 const gestionItems = [
