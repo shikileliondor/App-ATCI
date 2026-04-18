@@ -10,6 +10,7 @@ function Card({ children, className = '' }) {
 export default function Index({ membres }) {
     const { props } = usePage();
     const [deletingId, setDeletingId] = useState(null);
+    const [selectedMembre, setSelectedMembre] = useState(null);
 
     const membresList = useMemo(() => {
         const source = membres;
@@ -26,6 +27,24 @@ export default function Index({ membres }) {
     }, [membres]);
 
     const successMessage = props.flash?.success ?? props.message;
+
+    const formatDate = (value) => {
+        if (!value) {
+            return '-';
+        }
+
+        const parsedDate = new Date(value);
+
+        if (Number.isNaN(parsedDate.getTime())) {
+            return value;
+        }
+
+        return new Intl.DateTimeFormat('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        }).format(parsedDate);
+    };
 
     const handleDelete = (membre) => {
         if (!window.confirm(`Supprimer le membre "${membre.nom}" ? Cette action est irréversible.`)) {
@@ -73,45 +92,37 @@ export default function Index({ membres }) {
                                 <thead>
                                     <tr className="text-left text-xs uppercase tracking-wide text-gray-500">
                                         <th className="px-4 py-3 font-medium">Nom complet</th>
-                                        <th className="px-4 py-3 font-medium">Sexe</th>
-                                        <th className="px-4 py-3 font-medium">Naissance</th>
+                                        <th className="px-4 py-3 font-medium">Contact</th>
                                         <th className="px-4 py-3 font-medium">Téléphone</th>
-                                        <th className="px-4 py-3 font-medium">Email</th>
+                                        <th className="px-4 py-3 font-medium">Naissance</th>
                                         <th className="px-4 py-3 font-medium">Département</th>
                                         <th className="px-4 py-3 font-medium">Comité</th>
-                                        <th className="px-4 py-3 font-medium">Adresse</th>
-                                        <th className="px-4 py-3 font-medium">Baptisé</th>
-                                        <th className="px-4 py-3 font-medium">Date baptême</th>
-                                        <th className="px-4 py-3 font-medium">Situation</th>
-                                        <th className="px-4 py-3 font-medium">Profession</th>
-                                        <th className="px-4 py-3 font-medium">Fonction</th>
                                         <th className="px-4 py-3 font-medium">Statut</th>
-                                        <th className="px-4 py-3 font-medium">Inscription</th>
-                                        <th className="px-4 py-3 font-medium">Observations</th>
                                         <th className="px-4 py-3 text-right font-medium">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {membresList.map((membre) => (
                                         <tr key={membre.id} className="transition hover:bg-gray-50">
-                                            <td className="px-4 py-3 font-medium text-gray-900">{`${membre.nom} ${membre.prenom ?? ''}`.trim()}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.sexe ?? '-'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.date_naissance ?? '-'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.telephone || '-'}</td>
+                                            <td className="px-4 py-3 font-medium text-gray-900">
+                                                <p>{`${membre.nom} ${membre.prenom ?? ''}`.trim()}</p>
+                                                <p className="text-xs font-normal capitalize text-gray-500">{membre.sexe ?? '-'}</p>
+                                            </td>
                                             <td className="px-4 py-3 text-gray-600">{membre.email || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{membre.telephone || '-'}</td>
+                                            <td className="px-4 py-3 text-gray-600">{formatDate(membre.date_naissance)}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.departement?.nom || '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.comite?.nom || '-'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.adresse || '-'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.est_baptise ? 'Oui' : 'Non'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.date_bapteme || '-'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.situation_matrimoniale || '-'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.profession || '-'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.fonction_eglise || '-'}</td>
                                             <td className="px-4 py-3 text-gray-600">{membre.statut || '-'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.date_inscription || '-'}</td>
-                                            <td className="px-4 py-3 text-gray-600">{membre.observations || '-'}</td>
                                             <td className="px-4 py-3">
                                                 <div className="flex justify-end gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedMembre(membre)}
+                                                        className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:border-[#1a56a0] hover:text-[#1a56a0]"
+                                                    >
+                                                        Voir
+                                                    </button>
                                                     <Link
                                                         href={`/membres/${membre.id}/edit`}
                                                         className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:border-[#1a56a0] hover:text-[#1a56a0]"
@@ -155,6 +166,64 @@ export default function Index({ membres }) {
                     ) : null}
                 </Card>
             </PageContainer>
+
+            {selectedMembre ? (
+                <div className="fixed inset-0 z-40">
+                    <button type="button" aria-label="Fermer le volet" className="absolute inset-0 bg-gray-900/40" onClick={() => setSelectedMembre(null)} />
+
+                    <aside className="absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto bg-white shadow-xl">
+                        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+                            <div>
+                                <p className="text-xs uppercase tracking-wide text-gray-500">Détail membre</p>
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    {`${selectedMembre.nom} ${selectedMembre.prenom ?? ''}`.trim()}
+                                </h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedMembre(null)}
+                                className="rounded-lg border border-gray-300 px-2.5 py-1 text-sm text-gray-700 transition hover:border-[#1a56a0] hover:text-[#1a56a0]"
+                            >
+                                Fermer
+                            </button>
+                        </div>
+
+                        <div className="space-y-6 p-5">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <InfoItem label="Sexe" value={selectedMembre.sexe} />
+                                <InfoItem label="Statut" value={selectedMembre.statut} />
+                                <InfoItem label="Date de naissance" value={formatDate(selectedMembre.date_naissance)} />
+                                <InfoItem label="Date d'inscription" value={formatDate(selectedMembre.date_inscription)} />
+                                <InfoItem label="Baptisé" value={selectedMembre.est_baptise ? 'Oui' : 'Non'} />
+                                <InfoItem label="Date baptême" value={formatDate(selectedMembre.date_bapteme)} />
+                            </div>
+
+                            <InfoItem label="Téléphone" value={selectedMembre.telephone} />
+                            <InfoItem label="Email" value={selectedMembre.email} />
+                            <InfoItem label="Adresse" value={selectedMembre.adresse} />
+
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <InfoItem label="Département" value={selectedMembre.departement?.nom} />
+                                <InfoItem label="Comité" value={selectedMembre.comite?.nom} />
+                                <InfoItem label="Situation matrimoniale" value={selectedMembre.situation_matrimoniale} />
+                                <InfoItem label="Profession" value={selectedMembre.profession} />
+                            </div>
+
+                            <InfoItem label="Fonction dans l'église" value={selectedMembre.fonction_eglise} />
+                            <InfoItem label="Observations" value={selectedMembre.observations} />
+                        </div>
+                    </aside>
+                </div>
+            ) : null}
         </MainLayout>
+    );
+}
+
+function InfoItem({ label, value }) {
+    return (
+        <div className="space-y-1">
+            <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
+            <p className="text-sm text-gray-900">{value || '-'}</p>
+        </div>
     );
 }
