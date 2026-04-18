@@ -85,7 +85,7 @@ export default function Index() {
                             renderActions={(row) => (
                                 <div className="flex justify-end gap-2">
                                     <Link href={`/documents/${row.id}`} className="rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#1a56a0]"><Eye size={14} /></Link>
-                                    <a href={`/storage/${row.fichier}`} download className="rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#1a56a0]"><Download size={14} /></a>
+                                    <a href={`/api/documents/${row.id}/download`} className="rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#1a56a0]"><Download size={14} /></a>
                                     <Link href={`/documents/${row.id}/edit`} className="rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#1a56a0]"><Pencil size={14} /></Link>
                                     <button type="button" onClick={() => setDeleteTarget(row)} className="rounded-lg border border-red-200 p-2 text-red-600"><Trash2 size={14} /></button>
                                 </div>

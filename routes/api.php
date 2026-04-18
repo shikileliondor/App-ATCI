@@ -16,6 +16,7 @@ Route::apiResource('membres', MembreController::class);
 Route::apiResource('visiteurs', VisiteurController::class);
 Route::apiResource('comptabilites', ComptabiliteController::class);
 Route::apiResource('documents', DocumentController::class);
+Route::get('documents/{document}/download', [DocumentController::class, 'download']);
 Route::apiResource('cultes', CulteController::class);
 
 Route::apiResource('programmes', ProgrammeController::class);

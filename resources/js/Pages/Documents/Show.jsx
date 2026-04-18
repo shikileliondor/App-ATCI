@@ -33,7 +33,7 @@ export default function Show() {
                                 <div><dt className="text-gray-500">Description</dt><dd className="font-medium text-gray-800">{document.description ?? '-'}</dd></div>
                             </dl>
                             <div className="mt-6 flex flex-wrap gap-2">
-                                <a href={`/storage/${document.fichier}`} download><Button>Télécharger</Button></a>
+                                <a href={`/api/documents/${document.id}/download`}><Button>Télécharger</Button></a>
                                 <Link href={`/documents/${document.id}/edit`}><Button variant="secondary">Modifier</Button></Link>
                             </div>
                         </div>

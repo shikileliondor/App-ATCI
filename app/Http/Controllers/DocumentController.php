@@ -9,6 +9,8 @@ use App\Http\Requests\DocumentUpdateRequest;
 use App\Models\Document;
 use App\Services\DocumentService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DocumentController extends Controller
 {
@@ -62,6 +64,24 @@ class DocumentController extends Controller
 
         return response()->json([
             'message' => 'Document supprimé avec succès.',
+        ]);
+    }
+
+    public function download(Document $document): StreamedResponse
+    {
+        abort_unless(
+            $document->fichier !== '' && Storage::disk('public')->exists($document->fichier),
+            404,
+            'Fichier introuvable.'
+        );
+
+        $extension = pathinfo($document->fichier, PATHINFO_EXTENSION);
+        $safeTitle = str($document->titre)->slug('_')->toString();
+        $downloadName = trim($safeTitle, '_').($extension !== '' ? '.'.$extension : '');
+        $mimeType = Storage::disk('public')->mimeType($document->fichier) ?: 'application/octet-stream';
+
+        return Storage::disk('public')->download($document->fichier, $downloadName, [
+            'Content-Type' => $mimeType,
         ]);
     }
 }
