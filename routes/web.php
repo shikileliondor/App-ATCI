@@ -3,6 +3,7 @@
 use App\Http\Controllers\ComiteController;
 use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\DepartementController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MembreController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
@@ -19,9 +20,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)->middleware(['auth'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::resource('membres', MembreController::class)->except(['show']);
