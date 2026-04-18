@@ -1,28 +1,28 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { BookOpen, Building2, CalendarDays, Flame, FolderOpen, LayoutDashboard, Settings, Users } from '@/Components/Icons';
 
 const sections = [
     {
-        title: 'PRINCIPAL',
+        title: 'Principal',
         items: [{ label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard }],
     },
     {
-        title: 'ÉGLISE',
+        title: 'Église',
         items: [{ label: 'Membres', href: '/membres', icon: Users }],
     },
     {
-        title: 'ADMINISTRATION',
+        title: 'Administration',
         items: [{ label: 'Documents', href: '/documents', icon: FolderOpen }],
     },
     {
-        title: 'SPIRITUEL',
+        title: 'Spirituel',
         items: [
             { label: 'Cultes', href: '/cultes', icon: CalendarDays },
             { label: 'Programmes de prière', href: '/programmes', icon: Flame },
         ],
     },
-    { title: 'PARAMÈTRES', items: [{ label: 'Paramètres', href: '/settings', icon: Settings }] },
+    { title: 'Paramètres', items: [{ label: 'Paramètres', href: '/settings', icon: Settings }] },
 ];
 
 const gestionItems = [
@@ -37,43 +37,58 @@ const comptaItems = [
 
 export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse, branding }) {
     const { url } = usePage();
-    const containerClass = isCollapsed ? 'w-20' : 'w-72';
+    const containerClass = isCollapsed ? 'w-24' : 'w-80';
     const isGestionActive = gestionItems.some((item) => url.startsWith(item.href));
     const isComptaActive = comptaItems.some((item) => url.startsWith(item.href));
     const [isGestionOpen, setIsGestionOpen] = useState(isGestionActive);
     const [isComptaOpen, setIsComptaOpen] = useState(isComptaActive);
 
-    const logoUrl = branding?.logoPath ?? '/images/church-logo.svg';
+    const logoUrl = useMemo(() => branding?.logoPath || '/images/church-logo.svg', [branding?.logoPath]);
     const churchName = branding?.churchName ?? 'ERP Église';
+
+    const renderIcon = (Icon, active) => {
+        if (typeof Icon === 'string') {
+            return <span className="text-base">{Icon}</span>;
+        }
+
+        return <Icon size={15} />;
+    };
 
     const renderItem = (item) => {
         const Icon = item.icon;
         const active = url === item.href || url.startsWith(`${item.href}/`);
-        const linkClass = `group flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${active ? 'bg-blue-600/10 font-medium text-blue-700 shadow-sm' : 'text-gray-600 hover:bg-white hover:text-gray-900'}`;
+        const linkClass = `group flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${active ? 'bg-[#1a56a0]/10 font-semibold text-[#1a56a0] shadow-sm' : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'}`;
 
-        return item.href.startsWith('/') ? (
+        return (
             <Link key={item.label} href={item.href} className={linkClass}>
-                <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-xs ${active ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 group-hover:bg-blue-100 group-hover:text-blue-700'}`}><Icon size={14} /></span>
-                {!isCollapsed ? <span>{item.label}</span> : null}
+                <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs ${active ? 'border-[#1a56a0] bg-[#1a56a0] text-white' : 'border-slate-200 bg-white text-slate-500 group-hover:border-[#1a56a0]/20 group-hover:bg-[#1a56a0]/10 group-hover:text-[#1a56a0]'}`}>
+                    {renderIcon(Icon, active)}
+                </span>
+                {!isCollapsed ? <span className="truncate">{item.label}</span> : null}
             </Link>
-        ) : (
-            <a key={item.label} href={item.href} className={linkClass}>
-                <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-xs ${active ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 group-hover:bg-blue-100 group-hover:text-blue-700'}`}><Icon size={14} /></span>
-                {!isCollapsed ? <span>{item.label}</span> : null}
-            </a>
         );
     };
 
     return (
         <>
-            <div className={`fixed inset-0 z-30 bg-slate-900/30 backdrop-blur-sm lg:hidden ${isOpen ? 'block' : 'hidden'}`} onClick={onClose} />
-            <aside className={`fixed inset-y-0 left-0 z-40 ${containerClass} transform overflow-y-auto border-r border-white/70 bg-gradient-to-b from-[#f8f9ff] to-[#eef2ff] px-3 py-5 text-gray-700 shadow-2xl shadow-slate-900/5 transition-all duration-300 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="mb-8 flex items-start justify-between gap-2 px-2">
+            <div className={`fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-sm lg:hidden ${isOpen ? 'block' : 'hidden'}`} onClick={onClose} />
+            <aside className={`fixed inset-y-0 left-0 z-40 ${containerClass} transform overflow-y-auto border-r border-white/70 bg-gradient-to-b from-[#f4f8ff] via-[#edf3ff] to-[#e9f0ff] px-4 py-5 font-sans text-gray-700 shadow-2xl shadow-slate-900/10 transition-all duration-300 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="mb-8 flex items-start justify-between gap-3 px-1">
                     <div className="flex items-center gap-3 overflow-hidden">
-                        <img src={logoUrl} alt="Logo église" className="h-12 w-12 rounded-2xl border border-white/80 bg-white p-1 object-contain shadow-sm" />
-                        <div className={`transition-all ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
-                            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">ERP Église</p>
-                            <h1 className="truncate text-sm font-semibold text-gray-900">{churchName}</h1>
+                        <img
+                            src={logoUrl}
+                            alt="Logo église"
+                            className="h-16 w-16 rounded-2xl border border-white/90 bg-white p-1.5 object-contain shadow-md"
+                            loading="eager"
+                            decoding="async"
+                            onError={(event) => {
+                                event.currentTarget.onerror = null;
+                                event.currentTarget.src = '/images/church-logo.svg';
+                            }}
+                        />
+                        <div className={`min-w-0 transition-all ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
+                            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">Portail église</p>
+                            <h1 className="truncate text-base font-bold text-slate-900">{churchName}</h1>
                         </div>
                     </div>
                     <div className="flex gap-1">
@@ -84,24 +99,27 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
 
                 <nav className="space-y-5">
                     <div>
-                        {!isCollapsed ? <p className="mb-2 px-2 text-xs uppercase text-gray-500">GESTION</p> : null}
-                        <button type="button" onClick={() => setIsGestionOpen((v) => !v)} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${isGestionActive ? 'bg-blue-600/10 text-blue-700' : 'text-gray-600 hover:bg-white'}`}>
-                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white text-xs"><BookOpen size={14} /></span>
-                            {!isCollapsed ? <><span className="flex-1 text-left">Gestion</span><span>{isGestionOpen ? '▾' : '▸'}</span></> : null}
+                        {!isCollapsed ? <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Gestion</p> : null}
+                        <button type="button" onClick={() => setIsGestionOpen((v) => !v)} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${isGestionActive ? 'bg-[#1a56a0]/10 text-[#1a56a0]' : 'text-slate-600 hover:bg-white/80'}`}>
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs"><BookOpen size={14} /></span>
+                            {!isCollapsed ? <><span className="flex-1 text-left font-medium">Gestion</span><span>{isGestionOpen ? '▾' : '▸'}</span></> : null}
                         </button>
                         {(!isCollapsed && isGestionOpen) ? <div className="mt-1 space-y-1 pl-4">{gestionItems.map(renderItem)}</div> : null}
                     </div>
 
                     <div>
-                        <button type="button" onClick={() => setIsComptaOpen((v) => !v)} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${isComptaActive ? 'bg-blue-600/10 text-blue-700' : 'text-gray-600 hover:bg-white'}`}>
-                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white text-xs">💰</span>
-                            {!isCollapsed ? <><span className="flex-1 text-left">Comptabilité</span><span>{isComptaOpen ? '▾' : '▸'}</span></> : null}
+                        <button type="button" onClick={() => setIsComptaOpen((v) => !v)} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${isComptaActive ? 'bg-[#1a56a0]/10 text-[#1a56a0]' : 'text-slate-600 hover:bg-white/80'}`}>
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs">💰</span>
+                            {!isCollapsed ? <><span className="flex-1 text-left font-medium">Comptabilité</span><span>{isComptaOpen ? '▾' : '▸'}</span></> : null}
                         </button>
                         {(!isCollapsed && isComptaOpen) ? <div className="mt-1 space-y-1 pl-4">{comptaItems.map(renderItem)}</div> : null}
                     </div>
 
                     {sections.map((section) => (
-                        <div key={section.title}>{!isCollapsed ? <p className="mb-2 px-2 text-xs uppercase text-gray-500">{section.title}</p> : null}<div className="space-y-1">{section.items.map(renderItem)}</div></div>
+                        <div key={section.title}>
+                            {!isCollapsed ? <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{section.title}</p> : null}
+                            <div className="space-y-1">{section.items.map(renderItem)}</div>
+                        </div>
                     ))}
                 </nav>
             </aside>
