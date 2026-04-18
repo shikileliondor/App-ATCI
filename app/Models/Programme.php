@@ -14,20 +14,34 @@ class Programme extends Model
 
     protected $fillable = [
         'nom',
+        'type',
         'date_debut',
         'date_fin',
+        'heure',
         'lieu',
         'description',
         'statut',
+        'participants_enabled',
+        'participants_mode',
+        'expected_participants',
+        'actual_participants',
     ];
 
     protected $casts = [
         'date_debut' => 'date',
         'date_fin' => 'date',
+        'participants_enabled' => 'boolean',
+        'expected_participants' => 'integer',
+        'actual_participants' => 'integer',
     ];
 
     public function presences(): HasMany
     {
         return $this->hasMany(ProgrammePresence::class)->orderBy('date');
+    }
+
+    public function participants(): HasMany
+    {
+        return $this->hasMany(ProgrammeParticipant::class)->orderBy('nom');
     }
 }

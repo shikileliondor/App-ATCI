@@ -9,10 +9,11 @@ export default function Create() {
         nom: '',
         date_debut: '',
         date_fin: '',
+        type: '',
+        heure: '',
         lieu: '',
         description: '',
         statut: 'actif',
-        presences: [],
     });
     const [processing, setProcessing] = useState(false);
     const [errors, setErrors] = useState({});
@@ -23,6 +24,7 @@ export default function Create() {
 
         if (!data.nom) nextErrors.nom = 'Le nom est requis.';
         if (!data.date_debut) nextErrors.date_debut = 'La date de début est requise.';
+        if (!data.type) nextErrors.type = 'Le type est requis.';
         if (!data.date_fin) nextErrors.date_fin = 'La date de fin est requise.';
         if (data.date_debut && data.date_fin && new Date(data.date_fin) < new Date(data.date_debut)) {
             nextErrors.date_range = 'La date de fin doit être supérieure ou égale à la date de début.';
@@ -46,11 +48,11 @@ export default function Create() {
     };
 
     return (
-        <MainLayout title="Créer un programme" subtitle="Ajoutez un programme de prière autonome">
-            <Head title="Créer programme" />
+        <MainLayout title="Créer un événement" subtitle="Ajoutez un événement sans contrainte de participants">
+            <Head title="Créer événement" />
             <PageContainer>
                 <div className="mx-auto max-w-6xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <ProgrammesForm values={data} setValues={setData} errors={errors} onSubmit={submit} processing={processing} submitLabel="Créer le programme" />
+                    <ProgrammesForm values={data} setValues={setData} errors={errors} onSubmit={submit} processing={processing} submitLabel="Créer l'événement" />
                 </div>
             </PageContainer>
         </MainLayout>

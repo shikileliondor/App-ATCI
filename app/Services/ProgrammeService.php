@@ -28,21 +28,50 @@ class ProgrammeService
         return Programme::query()->orderBy('date_debut')->paginate($perPage);
     }
 
-    public function findOrFail(int $id): Programme
-    {
-        return Programme::query()->findOrFail($id);
-    }
-
     public function getProgrammeDashboard(int $id): array
     {
-        $programme = Programme::query()->with('presences')->findOrFail($id);
-        $presences = $programme->presences->sortBy('date')->values();
+        $programme = Programme::query()->with(['participants', 'presences'])->findOrFail($id);
 
         return [
             'programme' => $programme,
-            'presences' => $presences,
-            'stats' => $this->buildStats($presences),
+            'participants' => $programme->participants,
+            'stats' => $this->buildParticipantStats($programme),
         ];
+    }
+
+    public function create(array $data): Programme
+    {
+        try {
+            return DB::transaction(function () use ($data): Programme {
+                $programme = Programme::query()->create($this->applyBusinessRules($data));
+                return $programme->refresh();
+            });
+        } catch (Throwable $exception) {
+            throw new RuntimeException('Erreur lors de la création du programme.', 0, $exception);
+        }
+    }
+
+    public function update(Programme $programme, array $data): Programme
+    {
+        try {
+            return DB::transaction(function () use ($programme, $data): Programme {
+                $programme->fill($this->applyBusinessRules($data, $programme));
+                $programme->save();
+
+                return $programme->refresh();
+            });
+        } catch (Throwable $exception) {
+            throw new RuntimeException('Erreur lors de la mise à jour du programme.', 0, $exception);
+        }
+    }
+
+    public function delete(Programme $programme): void
+    {
+        try {
+            DB::transaction(fn (): bool => $programme->delete());
+        } catch (Throwable $exception) {
+            throw new RuntimeException('Erreur lors de la suppression du programme.', 0, $exception);
+        }
     }
 
     public function createPresence(Programme $programme, array $data): ProgrammePresence
@@ -93,75 +122,22 @@ class ProgrammeService
         }
     }
 
-    public function create(array $data): Programme
-    {
-        try {
-            return DB::transaction(function () use ($data): Programme {
-                $presences = $data['presences'] ?? [];
-                unset($data['presences']);
-
-                $programme = Programme::query()->create($this->applyBusinessRules($data));
-                $this->syncPresences($programme, $presences);
-
-                return $programme->refresh();
-            });
-        } catch (Throwable $exception) {
-            throw new RuntimeException('Erreur lors de la création du programme.', 0, $exception);
-        }
-    }
-
-    public function update(Programme $programme, array $data): Programme
-    {
-        try {
-            return DB::transaction(function () use ($programme, $data): Programme {
-                $presences = $data['presences'] ?? null;
-                unset($data['presences']);
-
-                $programme->fill($this->applyBusinessRules($data, $programme));
-                $programme->save();
-
-                if (is_array($presences)) {
-                    $this->syncPresences($programme, $presences);
-                }
-
-                return $programme->refresh();
-            });
-        } catch (Throwable $exception) {
-            throw new RuntimeException('Erreur lors de la mise à jour du programme.', 0, $exception);
-        }
-    }
-
-    public function delete(Programme $programme): void
-    {
-        try {
-            DB::transaction(fn (): bool => $programme->delete());
-        } catch (Throwable $exception) {
-            throw new RuntimeException('Erreur lors de la suppression du programme.', 0, $exception);
-        }
-    }
-
     private function applyBusinessRules(array $data, ?Programme $existingProgramme = null): array
     {
         if (! array_key_exists('statut', $data) || ! in_array($data['statut'], ['actif', 'termine'], true)) {
             $data['statut'] = $existingProgramme?->statut ?? 'actif';
         }
 
+        $isParticipantsEnabled = (bool) ($data['participants_enabled'] ?? $existingProgramme?->participants_enabled ?? false);
+        $data['participants_enabled'] = $isParticipantsEnabled;
+
+        if (! $isParticipantsEnabled) {
+            $data['participants_mode'] = null;
+            $data['expected_participants'] = null;
+            $data['actual_participants'] = null;
+        }
+
         return $data;
-    }
-
-    private function syncPresences(Programme $programme, array $presences): void
-    {
-        $programme->presences()->delete();
-
-        if ($presences === []) {
-            return;
-        }
-
-        foreach ($presences as $presence) {
-            $payload = $this->normalizePresencePayload($presence);
-            $payload['date'] = $presence['date'];
-            $programme->presences()->create($payload);
-        }
     }
 
     private function normalizePresencePayload(array $data, ?ProgrammePresence $existingPresence = null): array
@@ -181,28 +157,39 @@ class ProgrammeService
         return $payload;
     }
 
-    private function buildStats(Collection $presences): array
+    private function buildParticipantStats(Programme $programme): array
     {
-        if ($presences->isEmpty()) {
-            return [
-                'total' => 0,
-                'moyenne' => 0,
-                'max' => 0,
-                'min' => 0,
-                'jours' => 0,
-            ];
+        if (! $programme->participants_enabled) {
+            return ['has_data' => false];
         }
 
-        $participants = $presences->pluck('nombre_participants')->map(fn ($value): int => (int) $value);
-        $total = $participants->sum();
-        $jours = $participants->count();
+        $participants = $programme->participants;
+        $expected = (int) ($programme->expected_participants ?? 0);
+        $actualFromSimple = (int) ($programme->actual_participants ?? 0);
+        $actualFromAdvanced = $participants->count();
+
+        $actual = $programme->participants_mode === 'avance' ? max($actualFromAdvanced, $actualFromSimple) : $actualFromSimple;
+        $hasData = $expected > 0 || $actual > 0 || $participants->isNotEmpty();
+
+        if (! $hasData) {
+            return ['has_data' => false];
+        }
 
         return [
-            'total' => $total,
-            'moyenne' => round($total / $jours, 2),
-            'max' => $participants->max(),
-            'min' => $participants->min(),
-            'jours' => $jours,
+            'has_data' => true,
+            'total' => $actual,
+            'expected' => $expected,
+            'attendance_rate' => $expected > 0 ? round(($actual / $expected) * 100, 2) : null,
+            'gender_distribution' => [
+                'hommes' => $participants->where('sexe', 'homme')->count(),
+                'femmes' => $participants->where('sexe', 'femme')->count(),
+            ],
+            'departments' => $participants
+                ->filter(fn ($participant): bool => filled($participant->departement))
+                ->groupBy('departement')
+                ->map(fn (Collection $group): int => $group->count())
+                ->sortDesc()
+                ->all(),
         ];
     }
 }
