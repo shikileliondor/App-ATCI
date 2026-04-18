@@ -9,9 +9,9 @@ export default function Edit() {
     const id = url.split('/')[2];
     const { data, setData } = useForm({
         nom: '',
+        type: '',
         date_debut: '',
         date_fin: '',
-        type: '',
         heure: '',
         lieu: '',
         description: '',
@@ -44,6 +44,7 @@ export default function Edit() {
         const nextErrors = {};
 
         if (!data.nom) nextErrors.nom = 'Le nom est requis.';
+        if (!data.type) nextErrors.type = 'Le type est requis.';
         if (!data.date_debut) nextErrors.date_debut = 'La date de début est requise.';
         if (!data.type) nextErrors.type = 'Le type est requis.';
         if (!data.date_fin) nextErrors.date_fin = 'La date de fin est requise.';

@@ -7,9 +7,9 @@ import ProgrammesForm from '@/Pages/Programmes/Form';
 export default function Create() {
     const { data, setData } = useForm({
         nom: '',
+        type: '',
         date_debut: '',
         date_fin: '',
-        type: '',
         heure: '',
         lieu: '',
         description: '',
@@ -23,6 +23,7 @@ export default function Create() {
         const nextErrors = {};
 
         if (!data.nom) nextErrors.nom = 'Le nom est requis.';
+        if (!data.type) nextErrors.type = 'Le type est requis.';
         if (!data.date_debut) nextErrors.date_debut = 'La date de début est requise.';
         if (!data.type) nextErrors.type = 'Le type est requis.';
         if (!data.date_fin) nextErrors.date_fin = 'La date de fin est requise.';
@@ -48,7 +49,7 @@ export default function Create() {
     };
 
     return (
-        <MainLayout title="Créer un événement" subtitle="Ajoutez un événement sans contrainte de participants">
+        <MainLayout title="Créer un événement" subtitle="Ajoutez un événement sans blocage de participants">
             <Head title="Créer événement" />
             <PageContainer>
                 <div className="mx-auto max-w-6xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">

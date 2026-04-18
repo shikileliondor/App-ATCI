@@ -23,6 +23,6 @@ Route::post('programmes/{programme}/presences', [ProgrammePresenceController::cl
 Route::put('programmes/{programme}/presences/{presence}', [ProgrammePresenceController::class, 'update']);
 Route::delete('programmes/{programme}/presences/{presence}', [ProgrammePresenceController::class, 'destroy']);
 
+Route::put('programmes/{programme}/participants/settings', [ProgrammeParticipantController::class, 'updateSettings']);
 Route::post('programmes/{programme}/participants', [ProgrammeParticipantController::class, 'store']);
-Route::put('programmes/{programme}/participants/{participant}', [ProgrammeParticipantController::class, 'update']);
 Route::delete('programmes/{programme}/participants/{participant}', [ProgrammeParticipantController::class, 'destroy']);

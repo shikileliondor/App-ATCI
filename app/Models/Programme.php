@@ -23,16 +23,16 @@ class Programme extends Model
         'statut',
         'participants_enabled',
         'participants_mode',
-        'expected_participants',
-        'actual_participants',
+        'participants_expected',
+        'participants_actual',
     ];
 
     protected $casts = [
         'date_debut' => 'date',
         'date_fin' => 'date',
         'participants_enabled' => 'boolean',
-        'expected_participants' => 'integer',
-        'actual_participants' => 'integer',
+        'participants_expected' => 'integer',
+        'participants_actual' => 'integer',
     ];
 
     public function presences(): HasMany

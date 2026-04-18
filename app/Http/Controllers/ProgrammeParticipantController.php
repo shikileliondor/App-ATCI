@@ -4,44 +4,64 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProgrammeParticipantStoreRequest;
-use App\Http\Requests\ProgrammeParticipantUpdateRequest;
 use App\Models\Programme;
 use App\Models\ProgrammeParticipant;
+use App\Services\ProgrammeService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProgrammeParticipantController extends Controller
 {
-    public function store(ProgrammeParticipantStoreRequest $request, Programme $programme): JsonResponse
+    public function __construct(private readonly ProgrammeService $programmeService)
     {
-        $participant = $programme->participants()->create($request->validated());
+    }
+
+    public function updateSettings(Request $request, Programme $programme): JsonResponse
+    {
+        $validated = $request->validate([
+            'participants_enabled' => ['required', 'boolean'],
+            'participants_mode' => ['nullable', 'in:simple,advanced'],
+            'participants_expected' => ['nullable', 'integer', 'min:0'],
+            'participants_actual' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        if (($validated['participants_enabled'] ?? false) && empty($validated['participants_mode'])) {
+            return response()->json([
+                'message' => 'Le mode participants est requis lorsque le suivi est activé.',
+                'errors' => ['participants_mode' => ['Le mode participants est requis lorsque le suivi est activé.']],
+            ], 422);
+        }
+
+        $programme = $this->programmeService->updateParticipantSettings($programme, $validated);
 
         return response()->json([
-            'message' => 'Participant ajouté avec succès.',
+            'message' => 'Paramètres participants mis à jour.',
+            'data' => $programme,
+        ]);
+    }
+
+    public function store(Request $request, Programme $programme): JsonResponse
+    {
+        $validated = $request->validate([
+            'nom' => ['required', 'string', 'max:255'],
+            'sexe' => ['nullable', 'in:homme,femme'],
+            'departement' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $participant = $this->programmeService->addParticipant($programme, $validated);
+
+        return response()->json([
+            'message' => 'Participant ajouté.',
             'data' => $participant,
         ], 201);
     }
 
-    public function update(ProgrammeParticipantUpdateRequest $request, Programme $programme, ProgrammeParticipant $participant): JsonResponse
-    {
-        abort_if($participant->programme_id !== $programme->id, 404);
-
-        $participant->update($request->validated());
-
-        return response()->json([
-            'message' => 'Participant mis à jour avec succès.',
-            'data' => $participant,
-        ]);
-    }
-
     public function destroy(Programme $programme, ProgrammeParticipant $participant): JsonResponse
     {
-        abort_if($participant->programme_id !== $programme->id, 404);
-
-        $participant->delete();
+        $this->programmeService->deleteParticipant($programme, $participant);
 
         return response()->json([
-            'message' => 'Participant supprimé avec succès.',
+            'message' => 'Participant supprimé.',
         ]);
     }
 }

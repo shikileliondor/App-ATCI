@@ -4,34 +4,49 @@ import MainLayout from '@/Layouts/MainLayout';
 import PageContainer from '@/Layouts/PageContainer';
 import Button from '@/Components/ui/Button';
 
+function PercentBar({ label, value, total }) {
+    const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+
+    return (
+        <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-gray-600">
+                <span>{label}</span>
+                <span>{value} ({pct}%)</span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-100">
+                <div className="h-2 rounded-full bg-blue-500" style={{ width: `${pct}%` }} />
+            </div>
+        </div>
+    );
+}
+
 export default function Show() {
     const { url } = usePage();
     const id = url.split('/')[2];
 
     const [programme, setProgramme] = useState(null);
     const [participants, setParticipants] = useState([]);
-    const [stats, setStats] = useState({ has_data: false });
-    const [error, setError] = useState('');
-    const [toast, setToast] = useState(null);
-    const [participantForm, setParticipantForm] = useState({ nom: '', sexe: '', departement: '' });
-    const [simpleCounts, setSimpleCounts] = useState({ expected: '', actual: '' });
+    const [stats, setStats] = useState({ has_data: false, total: 0, attendance_rate: null, gender_distribution: {}, department_distribution: {} });
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    const showToast = (message, type = 'success') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 2800);
-    };
+    const [settings, setSettings] = useState({ participants_enabled: false, participants_mode: 'simple', participants_expected: '', participants_actual: '' });
+    const [participantForm, setParticipantForm] = useState({ nom: '', sexe: '', departement: '' });
 
     const loadDashboard = async () => {
         try {
             const response = await window.axios.get(`/api/programmes/${id}`);
             const payload = response.data?.data ?? {};
-            setProgramme(payload.programme ?? null);
+            const event = payload.programme ?? null;
+
+            setProgramme(event);
             setParticipants(payload.participants ?? []);
-            setStats(payload.stats ?? { has_data: false });
-            setSimpleCounts({
-                expected: payload.programme?.expected_participants ?? '',
-                actual: payload.programme?.actual_participants ?? '',
+            setStats(payload.stats ?? { has_data: false, total: 0, attendance_rate: null, gender_distribution: {}, department_distribution: {} });
+            setSettings({
+                participants_enabled: Boolean(event?.participants_enabled),
+                participants_mode: event?.participants_mode ?? 'simple',
+                participants_expected: event?.participants_expected ?? '',
+                participants_actual: event?.participants_actual ?? '',
             });
             setError('');
         } catch {
@@ -43,215 +58,179 @@ export default function Show() {
         loadDashboard();
     }, [id]);
 
-    const updateProgrammeParticipants = async (payload) => {
-        if (!programme) return;
-
+    const saveSettings = async () => {
         try {
             setLoading(true);
-            await window.axios.put(`/api/programmes/${programme.id}`, payload);
+            await window.axios.put(`/api/programmes/${id}/participants/settings`, {
+                participants_enabled: settings.participants_enabled,
+                participants_mode: settings.participants_enabled ? settings.participants_mode : null,
+                participants_expected: settings.participants_enabled ? (settings.participants_expected === '' ? null : Number(settings.participants_expected)) : null,
+                participants_actual: settings.participants_enabled ? (settings.participants_actual === '' ? null : Number(settings.participants_actual)) : null,
+            });
             await loadDashboard();
         } catch {
-            showToast('Erreur lors de la mise à jour.', 'error');
+            setError('Impossible d’enregistrer la configuration des participants.');
         } finally {
             setLoading(false);
         }
     };
 
-    const departmentRows = useMemo(
-        () => Object.entries(stats.departments ?? {}),
-        [stats.departments],
-    );
-
-    const handleCreateParticipant = async (event) => {
+    const addParticipant = async (event) => {
         event.preventDefault();
-        if (!participantForm.nom.trim()) {
-            showToast('Le nom du participant est requis.', 'error');
-            return;
-        }
 
         try {
             setLoading(true);
-            await window.axios.post(`/api/programmes/${programme.id}/participants`, participantForm);
+            await window.axios.post(`/api/programmes/${id}/participants`, {
+                nom: participantForm.nom,
+                sexe: participantForm.sexe || null,
+                departement: participantForm.departement || null,
+            });
             setParticipantForm({ nom: '', sexe: '', departement: '' });
-            showToast('Participant ajouté avec succès.');
             await loadDashboard();
         } catch {
-            showToast('Erreur lors de l’ajout.', 'error');
+            setError('Impossible d’ajouter ce participant.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDeleteParticipant = async (participantId) => {
+    const removeParticipant = async (participantId) => {
         try {
             setLoading(true);
-            await window.axios.delete(`/api/programmes/${programme.id}/participants/${participantId}`);
-            showToast('Participant supprimé.');
+            await window.axios.delete(`/api/programmes/${id}/participants/${participantId}`);
             await loadDashboard();
         } catch {
-            showToast('Erreur lors de la suppression.', 'error');
+            setError('Impossible de supprimer ce participant.');
         } finally {
             setLoading(false);
         }
     };
+
+    const totalGender = useMemo(() => Object.values(stats.gender_distribution ?? {}).reduce((sum, value) => sum + Number(value), 0), [stats.gender_distribution]);
+    const totalDepartments = useMemo(() => Object.values(stats.department_distribution ?? {}).reduce((sum, value) => sum + Number(value), 0), [stats.department_distribution]);
 
     return (
-        <MainLayout title="Détail de l'événement" subtitle="Gestion des participants optionnelle et statistiques automatiques">
+        <MainLayout title="Détail événement" subtitle="Vue moderne avec participants optionnels">
             <Head title="Détail événement" />
             <PageContainer>
-                {toast ? (
-                    <div className={`mb-4 rounded-xl border px-4 py-3 text-sm ${toast.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
-                        {toast.message}
-                    </div>
-                ) : null}
-
-                {error ? <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+                {error ? <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
 
                 {!programme ? <p className="text-sm text-gray-500">Chargement...</p> : (
                     <div className="space-y-6">
                         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                                <h2 className="text-2xl font-semibold text-gray-900">{programme.nom}</h2>
-                                <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{programme.type}</span>
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <h2 className="text-2xl font-semibold text-gray-900">{programme.nom}</h2>
+                                    <p className="text-sm text-gray-500">{programme.type} • {programme.lieu}</p>
+                                </div>
+                                <Link href={`/programmes/${programme.id}/edit`}><Button>Modifier</Button></Link>
                             </div>
-
-                            <div className="mt-4 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
-                                <div><p className="text-xs uppercase text-gray-500">Début</p><p className="font-medium text-gray-800">{new Date(programme.date_debut).toLocaleDateString('fr-FR')}</p></div>
-                                <div><p className="text-xs uppercase text-gray-500">Fin</p><p className="font-medium text-gray-800">{new Date(programme.date_fin).toLocaleDateString('fr-FR')}</p></div>
-                                <div><p className="text-xs uppercase text-gray-500">Heure</p><p className="font-medium text-gray-800">{programme.heure || 'Non définie'}</p></div>
-                                <div><p className="text-xs uppercase text-gray-500">Lieu</p><p className="font-medium text-gray-800">{programme.lieu}</p></div>
-                            </div>
-
-                            <div className="mt-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
-                                <p className="text-sm font-semibold text-gray-900">Description</p>
-                                <p className="mt-1 text-sm text-gray-700">{programme.description || 'Aucune description fournie.'}</p>
+                            <div className="mt-4 grid gap-3 md:grid-cols-3 text-sm">
+                                <div className="rounded-xl bg-gray-50 p-3"><p className="text-xs text-gray-500">Date</p><p className="font-medium text-gray-900">{new Date(programme.date_debut).toLocaleDateString('fr-FR')} → {new Date(programme.date_fin).toLocaleDateString('fr-FR')}</p></div>
+                                <div className="rounded-xl bg-gray-50 p-3"><p className="text-xs text-gray-500">Heure</p><p className="font-medium text-gray-900">{programme.heure || 'Non définie'}</p></div>
+                                <div className="rounded-xl bg-gray-50 p-3"><p className="text-xs text-gray-500">Description</p><p className="font-medium text-gray-900">{programme.description || 'Aucune description'}</p></div>
                             </div>
                         </div>
 
                         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Participants</h3>
-                                    <p className="text-sm text-gray-500">Activez ce module seulement si nécessaire.</p>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => updateProgrammeParticipants({ participants_enabled: !programme.participants_enabled })}
-                                    className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-medium ${programme.participants_enabled ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700'}`}
-                                    disabled={loading}
-                                >
-                                    {programme.participants_enabled ? 'Participants activés' : 'Activer les participants'}
-                                </button>
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900">Participants</h3>
+                                <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                                    <input
+                                        type="checkbox"
+                                        checked={settings.participants_enabled}
+                                        onChange={(event) => setSettings((prev) => ({ ...prev, participants_enabled: event.target.checked }))}
+                                    />
+                                    Activer les participants
+                                </label>
                             </div>
 
-                            {!programme.participants_enabled ? (
-                                <p className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-3 text-sm text-gray-500">Module inactif. L'événement reste entièrement fonctionnel sans participants.</p>
-                            ) : (
+                            {settings.participants_enabled ? (
                                 <>
-                                    <div className="grid gap-4 md:grid-cols-3">
+                                    <div className="grid gap-3 md:grid-cols-4">
                                         <label className="space-y-1 text-sm">
-                                            <span className="text-gray-700">Mode</span>
-                                            <select
-                                                value={programme.participants_mode ?? 'simple'}
-                                                onChange={(event) => updateProgrammeParticipants({ participants_enabled: true, participants_mode: event.target.value })}
-                                                className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                                            >
-                                                <option value="simple">Mode simple</option>
-                                                <option value="avance">Mode avancé</option>
+                                            <span className="text-gray-600">Mode</span>
+                                            <select value={settings.participants_mode} onChange={(event) => setSettings((prev) => ({ ...prev, participants_mode: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2">
+                                                <option value="simple">Simple (nombres)</option>
+                                                <option value="advanced">Avancé (liste)</option>
                                             </select>
                                         </label>
-
                                         <label className="space-y-1 text-sm">
-                                            <span className="text-gray-700">Nombre attendu</span>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                value={simpleCounts.expected}
-                                                onChange={(event) => setSimpleCounts((curr) => ({ ...curr, expected: event.target.value }))}
-                                                onBlur={(event) => updateProgrammeParticipants({ participants_enabled: true, expected_participants: Number(event.target.value || 0) })}
-                                                className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                                            />
+                                            <span className="text-gray-600">Nombre attendu</span>
+                                            <input type="number" min={0} value={settings.participants_expected} onChange={(event) => setSettings((prev) => ({ ...prev, participants_expected: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2" />
                                         </label>
-
                                         <label className="space-y-1 text-sm">
-                                            <span className="text-gray-700">Nombre réel</span>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                value={simpleCounts.actual}
-                                                onChange={(event) => setSimpleCounts((curr) => ({ ...curr, actual: event.target.value }))}
-                                                onBlur={(event) => updateProgrammeParticipants({ participants_enabled: true, actual_participants: Number(event.target.value || 0) })}
-                                                className="w-full rounded-xl border border-gray-200 px-3 py-2"
-                                            />
+                                            <span className="text-gray-600">Nombre réel</span>
+                                            <input type="number" min={0} value={settings.participants_actual} onChange={(event) => setSettings((prev) => ({ ...prev, participants_actual: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2" disabled={settings.participants_mode === 'advanced'} />
                                         </label>
+                                        <div className="flex items-end">
+                                            <Button onClick={saveSettings} disabled={loading} className="w-full">Enregistrer</Button>
+                                        </div>
                                     </div>
 
-                                    {programme.participants_mode === 'avance' ? (
-                                        <>
-                                            <form onSubmit={handleCreateParticipant} className="grid gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4 md:grid-cols-4">
-                                                <input value={participantForm.nom} onChange={(event) => setParticipantForm((curr) => ({ ...curr, nom: event.target.value }))} placeholder="Nom" className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
-                                                <select value={participantForm.sexe} onChange={(event) => setParticipantForm((curr) => ({ ...curr, sexe: event.target.value }))} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
-                                                    <option value="">Sexe</option>
+                                    {settings.participants_mode === 'advanced' ? (
+                                        <div className="space-y-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                                            <form className="grid gap-3 md:grid-cols-4" onSubmit={addParticipant}>
+                                                <input required placeholder="Nom" value={participantForm.nom} onChange={(event) => setParticipantForm((prev) => ({ ...prev, nom: event.target.value }))} className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
+                                                <select value={participantForm.sexe} onChange={(event) => setParticipantForm((prev) => ({ ...prev, sexe: event.target.value }))} className="rounded-xl border border-gray-200 px-3 py-2 text-sm">
+                                                    <option value="">Sexe (optionnel)</option>
                                                     <option value="homme">Homme</option>
                                                     <option value="femme">Femme</option>
                                                 </select>
-                                                <input value={participantForm.departement} onChange={(event) => setParticipantForm((curr) => ({ ...curr, departement: event.target.value }))} placeholder="Département" className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                                                <input placeholder="Département (optionnel)" value={participantForm.departement} onChange={(event) => setParticipantForm((prev) => ({ ...prev, departement: event.target.value }))} className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
                                                 <Button type="submit" disabled={loading}>Ajouter</Button>
                                             </form>
 
                                             <div className="space-y-2">
-                                                {participants.length === 0 ? <p className="text-sm text-gray-500">Aucun participant enregistré.</p> : participants.map((participant) => (
-                                                    <div key={participant.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3 text-sm">
-                                                        <div>
-                                                            <p className="font-medium text-gray-800">{participant.nom}</p>
-                                                            <p className="text-gray-500">{participant.sexe || '—'} · {participant.departement || 'Sans département'}</p>
-                                                        </div>
-                                                        <button type="button" onClick={() => handleDeleteParticipant(participant.id)} className="rounded-lg border border-red-200 px-3 py-1.5 text-red-600">Supprimer</button>
+                                                {participants.length === 0 ? <p className="text-sm text-gray-500">Aucun participant ajouté.</p> : participants.map((participant) => (
+                                                    <div key={participant.id} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm">
+                                                        <span>{participant.nom} {participant.sexe ? `• ${participant.sexe}` : ''} {participant.departement ? `• ${participant.departement}` : ''}</span>
+                                                        <button type="button" className="text-red-600" onClick={() => removeParticipant(participant.id)}>Supprimer</button>
                                                     </div>
                                                 ))}
                                             </div>
-                                        </>
+                                        </div>
                                     ) : null}
-
-                                    <div className="grid gap-4 md:grid-cols-3">
-                                        <div className="rounded-xl border border-gray-200 p-4">
-                                            <p className="text-xs uppercase text-gray-500">Total participants</p>
-                                            <p className="mt-1 text-2xl font-semibold text-gray-900">{stats.has_data ? stats.total : '—'}</p>
-                                        </div>
-                                        <div className="rounded-xl border border-gray-200 p-4">
-                                            <p className="text-xs uppercase text-gray-500">Taux de présence</p>
-                                            <p className="mt-1 text-2xl font-semibold text-gray-900">{stats.has_data && stats.attendance_rate !== null ? `${stats.attendance_rate}%` : '—'}</p>
-                                        </div>
-                                        <div className="rounded-xl border border-gray-200 p-4">
-                                            <p className="text-xs uppercase text-gray-500">Répartition H/F</p>
-                                            <p className="mt-1 text-sm font-medium text-gray-900">
-                                                {stats.has_data ? `${stats.gender_distribution?.hommes ?? 0} hommes / ${stats.gender_distribution?.femmes ?? 0} femmes` : '—'}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {stats.has_data ? (
-                                        <div className="rounded-xl border border-gray-200 p-4">
-                                            <p className="text-sm font-semibold text-gray-900 mb-3">Répartition par département</p>
-                                            {departmentRows.length === 0 ? <p className="text-sm text-gray-500">Aucune donnée disponible</p> : (
-                                                <div className="space-y-2">
-                                                    {departmentRows.map(([department, count]) => (
-                                                        <div key={department}>
-                                                            <div className="mb-1 flex justify-between text-xs text-gray-600"><span>{department}</span><span>{count}</span></div>
-                                                            <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-indigo-500" style={{ width: `${Math.min(100, (count / Math.max(stats.total, 1)) * 100)}%` }} /></div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : <p className="rounded-lg bg-gray-50 p-3 text-sm text-gray-500">Aucune donnée disponible</p>}
                                 </>
+                            ) : (
+                                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+                                    Activez les participants pour ajouter un suivi (optionnel).
+                                </div>
                             )}
                         </div>
 
-                        <div className="flex gap-3">
-                            <Link href={`/programmes/${programme.id}/edit`}><Button>Modifier l'événement</Button></Link>
-                            <Link href="/programmes"><Button variant="secondary">Retour à la liste</Button></Link>
+                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-3">
+                            <h3 className="text-lg font-semibold text-gray-900">Statistiques</h3>
+
+                            {!stats.has_data ? (
+                                <p className="rounded-lg bg-gray-50 p-3 text-sm text-gray-500">Aucune donnée disponible</p>
+                            ) : (
+                                <>
+                                    <div className="grid gap-3 md:grid-cols-3">
+                                        <div className="rounded-xl bg-blue-50 p-4"><p className="text-xs text-blue-700">Total participants</p><p className="text-2xl font-bold text-blue-900">{stats.total}</p></div>
+                                        <div className="rounded-xl bg-emerald-50 p-4"><p className="text-xs text-emerald-700">Taux de présence</p><p className="text-2xl font-bold text-emerald-900">{stats.attendance_rate ?? '-'}{stats.attendance_rate !== null ? '%' : ''}</p></div>
+                                        <div className="rounded-xl bg-purple-50 p-4"><p className="text-xs text-purple-700">Mode</p><p className="text-2xl font-bold text-purple-900">{programme.participants_mode === 'advanced' ? 'Avancé' : 'Simple'}</p></div>
+                                    </div>
+
+                                    {Object.keys(stats.gender_distribution ?? {}).length > 0 ? (
+                                        <div className="space-y-2">
+                                            <p className="text-sm font-medium text-gray-700">Répartition hommes / femmes</p>
+                                            {Object.entries(stats.gender_distribution).map(([key, value]) => (
+                                                <PercentBar key={key} label={key} value={Number(value)} total={totalGender} />
+                                            ))}
+                                        </div>
+                                    ) : null}
+
+                                    {Object.keys(stats.department_distribution ?? {}).length > 0 ? (
+                                        <div className="space-y-2">
+                                            <p className="text-sm font-medium text-gray-700">Répartition par département</p>
+                                            {Object.entries(stats.department_distribution).map(([key, value]) => (
+                                                <PercentBar key={key} label={key} value={Number(value)} total={totalDepartments} />
+                                            ))}
+                                        </div>
+                                    ) : null}
+                                </>
+                            )}
                         </div>
                     </div>
                 )}

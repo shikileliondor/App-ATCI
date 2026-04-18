@@ -33,7 +33,7 @@ export default function Index() {
     const [loading, setLoading] = useState(true);
     const [deleteTarget, setDeleteTarget] = useState(null);
 
-    const loadProgrammes = async () => {
+    const loadEvents = async () => {
         setLoading(true);
         const response = await window.axios.get('/api/programmes');
         const payload = response.data?.data;
@@ -42,7 +42,7 @@ export default function Index() {
     };
 
     useEffect(() => {
-        loadProgrammes();
+        loadEvents();
     }, []);
 
     const filtered = useMemo(() => {
@@ -68,7 +68,7 @@ export default function Index() {
         if (!deleteTarget) return;
         await window.axios.delete(`/api/programmes/${deleteTarget.id}`);
         setDeleteTarget(null);
-        loadProgrammes();
+        loadEvents();
     };
 
     const columns = [
@@ -82,18 +82,18 @@ export default function Index() {
                 </div>
             ),
         },
-        { key: 'type', label: 'Type', render: (row) => row.type || '—' },
+        { key: 'type', label: 'Type', render: (row) => row.type || '-' },
         { key: 'date_debut', label: 'Début', render: (row) => new Date(row.date_debut).toLocaleDateString('fr-FR') },
         { key: 'date_fin', label: 'Fin', render: (row) => new Date(row.date_fin).toLocaleDateString('fr-FR') },
-        { key: 'heure', label: 'Heure', render: (row) => row.heure || '—' },
+        { key: 'heure', label: 'Heure', render: (row) => row.heure || '-' },
         { key: 'lieu', label: 'Lieu' },
         { key: 'statut', label: 'Statut', render: (row) => <StatusBadge status={row.statut} /> },
         { key: 'duree', label: 'Durée', render: (row) => `${diffInDays(row.date_debut, row.date_fin)} jours` },
     ];
 
     return (
-        <MainLayout title="Événements" subtitle="Gestion moderne des événements (hors cultes)" actionLabel="Créer un événement" onAction={() => router.visit('/programmes/create')}>
-            <Head title="Événements" />
+        <MainLayout title="Événements de prière" subtitle="Gestion moderne des événements (hors cultes)" actionLabel="Créer un événement" onAction={() => router.visit('/programmes/create')}>
+            <Head title="Événements de prière" />
             <PageContainer>
                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
