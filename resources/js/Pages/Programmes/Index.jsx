@@ -33,7 +33,7 @@ export default function Index() {
     const [loading, setLoading] = useState(true);
     const [deleteTarget, setDeleteTarget] = useState(null);
 
-    const loadProgrammes = async () => {
+    const loadEvents = async () => {
         setLoading(true);
         const response = await window.axios.get('/api/programmes');
         const payload = response.data?.data;
@@ -42,12 +42,12 @@ export default function Index() {
     };
 
     useEffect(() => {
-        loadProgrammes();
+        loadEvents();
     }, []);
 
     const filtered = useMemo(() => {
         const filteredItems = items.filter((programme) => {
-            const inQuery = !query || [programme.nom, programme.lieu, programme.description]
+            const inQuery = !query || [programme.nom, programme.type, programme.lieu, programme.description]
                 .filter(Boolean)
                 .some((field) => field.toLowerCase().includes(query.toLowerCase()));
             const inStatus = !statusFilter || programme.statut === statusFilter;
@@ -68,42 +68,44 @@ export default function Index() {
         if (!deleteTarget) return;
         await window.axios.delete(`/api/programmes/${deleteTarget.id}`);
         setDeleteTarget(null);
-        loadProgrammes();
+        loadEvents();
     };
 
     const columns = [
         {
             key: 'nom',
-            label: 'Programme',
+            label: 'Événement',
             render: (row) => (
                 <div>
                     <div className="font-medium text-gray-900">{row.nom}</div>
-                    {isOngoing(row.date_debut, row.date_fin) ? <p className="text-xs text-emerald-600">Programme en cours</p> : null}
+                    {isOngoing(row.date_debut, row.date_fin) ? <p className="text-xs text-emerald-600">Événement en cours</p> : null}
                 </div>
             ),
         },
+        { key: 'type', label: 'Type', render: (row) => row.type || '-' },
         { key: 'date_debut', label: 'Début', render: (row) => new Date(row.date_debut).toLocaleDateString('fr-FR') },
         { key: 'date_fin', label: 'Fin', render: (row) => new Date(row.date_fin).toLocaleDateString('fr-FR') },
+        { key: 'heure', label: 'Heure', render: (row) => row.heure || '-' },
         { key: 'lieu', label: 'Lieu' },
         { key: 'statut', label: 'Statut', render: (row) => <StatusBadge status={row.statut} /> },
         { key: 'duree', label: 'Durée', render: (row) => `${diffInDays(row.date_debut, row.date_fin)} jours` },
     ];
 
     return (
-        <MainLayout title="Programmes de prière" subtitle="Gestion autonome des saisons de prière" actionLabel="Créer un programme" onAction={() => router.visit('/programmes/create')}>
-            <Head title="Programmes de prière" />
+        <MainLayout title="Événements de prière" subtitle="Gestion moderne des événements (hors cultes)" actionLabel="Créer un événement" onAction={() => router.visit('/programmes/create')}>
+            <Head title="Événements de prière" />
             <PageContainer>
                 <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                     <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                         <div className="flex flex-1 flex-col gap-2 md:flex-row">
-                            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Rechercher un programme..." className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" />
+                            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Rechercher un événement..." className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm" />
                             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded-xl border border-gray-200 px-3 py-2 text-sm">
                                 <option value="">Tous les statuts</option>
                                 <option value="actif">Actif</option>
                                 <option value="termine">Terminé</option>
                             </select>
                         </div>
-                        <Link href="/programmes/create"><Button><Plus size={16} /> Créer un programme</Button></Link>
+                        <Link href="/programmes/create"><Button><Plus size={16} /> Créer un événement</Button></Link>
                     </div>
 
                     {loading ? <p className="text-sm text-gray-500">Chargement...</p> : (
@@ -111,7 +113,7 @@ export default function Index() {
                             <DataTable
                                 columns={columns}
                                 data={paginated}
-                                emptyMessage="Aucun programme pour le moment"
+                                emptyMessage="Aucun événement pour le moment"
                                 renderActions={(row) => (
                                     <div className="flex justify-end gap-2">
                                         <Link href={`/programmes/${row.id}`} className="rounded-lg border border-gray-200 p-2 text-gray-600 hover:text-[#1a56a0]"><Eye size={14} /></Link>
@@ -121,7 +123,7 @@ export default function Index() {
                                 )}
                             />
                             <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-                                <p>{filtered.length} programme(s)</p>
+                                <p>{filtered.length} événement(s)</p>
                                 <div className="flex items-center gap-2">
                                     <Button variant="secondary" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Précédent</Button>
                                     <span>Page {page}/{totalPages}</span>
@@ -134,8 +136,8 @@ export default function Index() {
 
                 <ConfirmDialog
                     open={Boolean(deleteTarget)}
-                    title="Supprimer ce programme ?"
-                    description={deleteTarget ? `Le programme "${deleteTarget.nom}" sera supprimé définitivement.` : ''}
+                    title="Supprimer cet événement ?"
+                    description={deleteTarget ? `L'événement "${deleteTarget.nom}" sera supprimé définitivement.` : ''}
                     onCancel={() => setDeleteTarget(null)}
                     onConfirm={remove}
                 />

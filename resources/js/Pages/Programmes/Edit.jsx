@@ -9,12 +9,13 @@ export default function Edit() {
     const id = url.split('/')[2];
     const { data, setData } = useForm({
         nom: '',
+        type: '',
         date_debut: '',
         date_fin: '',
+        heure: '',
         lieu: '',
         description: '',
         statut: 'actif',
-        presences: [],
     });
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
@@ -24,24 +25,15 @@ export default function Edit() {
         window.axios.get(`/api/programmes/${id}`).then((response) => {
             const payload = response.data?.data ?? {};
             const programme = payload.programme ?? {};
-            const presences = payload.presences ?? [];
-
             setData({
                 nom: programme.nom ?? '',
+                type: programme.type ?? '',
                 date_debut: programme.date_debut ?? '',
                 date_fin: programme.date_fin ?? '',
+                heure: programme.heure ?? '',
                 lieu: programme.lieu ?? '',
                 description: programme.description ?? '',
                 statut: programme.statut ?? 'actif',
-                presences: presences.map((presence) => ({
-                    date: presence.date,
-                    hommes_adultes: Number(presence.hommes_adultes ?? 0),
-                    femmes_adultes: Number(presence.femmes_adultes ?? 0),
-                    jeunes_hommes: Number(presence.jeunes_hommes ?? 0),
-                    jeunes_filles: Number(presence.jeunes_filles ?? 0),
-                    enfants: Number(presence.enfants ?? 0),
-                    visiteurs: Number(presence.visiteurs ?? 0),
-                })),
             });
             setLoading(false);
         });
@@ -52,7 +44,9 @@ export default function Edit() {
         const nextErrors = {};
 
         if (!data.nom) nextErrors.nom = 'Le nom est requis.';
+        if (!data.type) nextErrors.type = 'Le type est requis.';
         if (!data.date_debut) nextErrors.date_debut = 'La date de début est requise.';
+        if (!data.type) nextErrors.type = 'Le type est requis.';
         if (!data.date_fin) nextErrors.date_fin = 'La date de fin est requise.';
         if (data.date_debut && data.date_fin && new Date(data.date_fin) < new Date(data.date_debut)) {
             nextErrors.date_range = 'La date de fin doit être supérieure ou égale à la date de début.';
@@ -76,8 +70,8 @@ export default function Edit() {
     };
 
     return (
-        <MainLayout title="Modifier le programme" subtitle="Mettez à jour les informations de prière">
-            <Head title="Modifier programme" />
+        <MainLayout title="Modifier l'événement" subtitle="Mettez à jour les informations principales">
+            <Head title="Modifier événement" />
             <PageContainer>
                 {loading ? <p className="text-sm text-gray-500">Chargement...</p> : (
                     <div className="mx-auto max-w-6xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
