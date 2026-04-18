@@ -22,3 +22,7 @@ export function Download(props) { return <IconBase {...props}><path d="M21 15v4a
 export function Eye(props) { return <IconBase {...props}><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" /><circle cx="12" cy="12" r="3" /></IconBase>; }
 export function Pencil(props) { return <IconBase {...props}><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></IconBase>; }
 export function Trash2(props) { return <IconBase {...props}><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" /></IconBase>; }
+
+export function MessageSquare(props) { return <IconBase {...props}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></IconBase>; }
+export function Wallet(props) { return <IconBase {...props}><path d="M3 7a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><path d="M16 12h4" /><circle cx="16" cy="12" r="1" /></IconBase>; }
+export function Church(props) { return <IconBase {...props}><path d="M12 3 5 9h14z" /><path d="M6 10v11h12V10" /><path d="M10 21v-5h4v5" /><path d="M12 3v4" /></IconBase>; }

@@ -1,68 +1,38 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
-import { BookOpen, Building2, CalendarDays, Flame, FolderOpen, LayoutDashboard, Settings, Users } from '@/Components/Icons';
+import { useMemo } from 'react';
+import { CalendarDays, Church, Flame, FolderOpen, LayoutDashboard, MessageSquare, Settings, Users, Wallet } from '@/Components/Icons';
 
-const sections = [
-    {
-        title: 'Principal',
-        items: [{ label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard }],
-    },
-    {
-        title: 'Église',
-        items: [{ label: 'Membres', href: '/membres', icon: Users }],
-    },
-    {
-        title: 'Administration',
-        items: [{ label: 'Documents', href: '/documents', icon: FolderOpen }],
-    },
-    {
-        title: 'Spirituel',
-        items: [
-            { label: 'Cultes', href: '/cultes', icon: CalendarDays },
-            { label: 'Programmes de prière', href: '/programmes', icon: Flame },
-        ],
-    },
-    { title: 'Paramètres', items: [{ label: 'Paramètres', href: '/settings', icon: Settings }] },
-];
-
-const gestionItems = [
-    { label: 'Départements', href: '/departements', icon: Building2 },
-    { label: 'Comités', href: '/comites', icon: BookOpen },
-];
-
-const comptaItems = [
-    { label: 'Transactions', href: '/comptabilite', icon: '💰' },
-    { label: 'Rapport', href: '/comptabilite', icon: '📈' },
+const navigationItems = [
+    { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
+    { label: 'Membres', href: '/membres', icon: Users },
+    { label: 'Événements', href: '/evenements', icon: CalendarDays },
+    { label: 'Comptabilité', href: '/comptabilite', icon: Wallet },
+    { label: 'Communication', href: '/communication', icon: MessageSquare },
+    { label: 'Documents', href: '/documents', icon: FolderOpen },
+    { label: 'Cultes', href: '/cultes', icon: Church },
+    { label: 'Programmes de prière', href: '/programmes', icon: Flame },
+    { label: 'Paramètres', href: '/settings', icon: Settings },
 ];
 
 export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse, branding }) {
     const { url } = usePage();
     const containerClass = isCollapsed ? 'w-24' : 'w-80';
-    const isGestionActive = gestionItems.some((item) => url.startsWith(item.href));
-    const isComptaActive = comptaItems.some((item) => url.startsWith(item.href));
-    const [isGestionOpen, setIsGestionOpen] = useState(isGestionActive);
-    const [isComptaOpen, setIsComptaOpen] = useState(isComptaActive);
 
     const logoUrl = useMemo(() => branding?.logoPath || '/images/church-logo.svg', [branding?.logoPath]);
     const churchName = branding?.churchName ?? 'ERP Église';
 
-    const renderIcon = (Icon, active) => {
-        if (typeof Icon === 'string') {
-            return <span className="text-base">{Icon}</span>;
-        }
-
-        return <Icon size={15} />;
-    };
-
     const renderItem = (item) => {
         const Icon = item.icon;
         const active = url === item.href || url.startsWith(`${item.href}/`);
-        const linkClass = `group flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${active ? 'bg-[#1a56a0]/10 font-semibold text-[#1a56a0] shadow-sm' : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'}`;
 
         return (
-            <Link key={item.label} href={item.href} className={linkClass}>
+            <Link
+                key={item.label}
+                href={item.href}
+                className={`group flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${active ? 'bg-[#1a56a0]/10 font-semibold text-[#1a56a0] shadow-sm' : 'text-slate-600 hover:bg-white/80 hover:text-slate-900'}`}
+            >
                 <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs ${active ? 'border-[#1a56a0] bg-[#1a56a0] text-white' : 'border-slate-200 bg-white text-slate-500 group-hover:border-[#1a56a0]/20 group-hover:bg-[#1a56a0]/10 group-hover:text-[#1a56a0]'}`}>
-                    {renderIcon(Icon, active)}
+                    <Icon size={15} />
                 </span>
                 {!isCollapsed ? <span className="truncate">{item.label}</span> : null}
             </Link>
@@ -97,31 +67,7 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                     </div>
                 </div>
 
-                <nav className="space-y-5">
-                    <div>
-                        {!isCollapsed ? <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Gestion</p> : null}
-                        <button type="button" onClick={() => setIsGestionOpen((v) => !v)} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${isGestionActive ? 'bg-[#1a56a0]/10 text-[#1a56a0]' : 'text-slate-600 hover:bg-white/80'}`}>
-                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs"><BookOpen size={14} /></span>
-                            {!isCollapsed ? <><span className="flex-1 text-left font-medium">Gestion</span><span>{isGestionOpen ? '▾' : '▸'}</span></> : null}
-                        </button>
-                        {(!isCollapsed && isGestionOpen) ? <div className="mt-1 space-y-1 pl-4">{gestionItems.map(renderItem)}</div> : null}
-                    </div>
-
-                    <div>
-                        <button type="button" onClick={() => setIsComptaOpen((v) => !v)} className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm transition ${isComptaActive ? 'bg-[#1a56a0]/10 text-[#1a56a0]' : 'text-slate-600 hover:bg-white/80'}`}>
-                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-xs">💰</span>
-                            {!isCollapsed ? <><span className="flex-1 text-left font-medium">Comptabilité</span><span>{isComptaOpen ? '▾' : '▸'}</span></> : null}
-                        </button>
-                        {(!isCollapsed && isComptaOpen) ? <div className="mt-1 space-y-1 pl-4">{comptaItems.map(renderItem)}</div> : null}
-                    </div>
-
-                    {sections.map((section) => (
-                        <div key={section.title}>
-                            {!isCollapsed ? <p className="mb-2 px-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">{section.title}</p> : null}
-                            <div className="space-y-1">{section.items.map(renderItem)}</div>
-                        </div>
-                    ))}
-                </nav>
+                <nav className="space-y-1">{navigationItems.map(renderItem)}</nav>
             </aside>
         </>
     );

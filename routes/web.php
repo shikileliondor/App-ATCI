@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ComiteController;
+use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\DepartementController;
 use App\Http\Controllers\MembreController;
 use App\Http\Controllers\ProfileController;
@@ -43,6 +44,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/programmes/{id}/edit', fn () => Inertia::render('Programmes/Edit'))->name('programmes.edit');
 
     Route::get('/comptabilite', fn () => Inertia::render('Comptabilite/Index'))->name('comptabilite.index');
+
+    Route::get('/evenements', function () {
+        return Inertia::render('Evenements/Index');
+    })->name('evenements.index');
+
+    Route::get('/communication', [CommunicationController::class, 'index'])->name('communication.index');
+    Route::post('/communication/send', [CommunicationController::class, 'send'])->name('communication.send');
+
+    Route::post('/communication/templates', [CommunicationController::class, 'storeTemplate'])->name('communication.templates.store');
+    Route::put('/communication/templates/{template}', [CommunicationController::class, 'updateTemplate'])->name('communication.templates.update');
+    Route::delete('/communication/templates/{template}', [CommunicationController::class, 'destroyTemplate'])->name('communication.templates.destroy');
     Route::get('/comptabilite/create', fn () => Inertia::render('Comptabilite/Create'))->name('comptabilite.create');
     Route::get('/comptabilite/{id}', fn () => Inertia::render('Comptabilite/Show'))->name('comptabilite.show');
     Route::get('/comptabilite/{id}/edit', fn () => Inertia::render('Comptabilite/Edit'))->name('comptabilite.edit');
