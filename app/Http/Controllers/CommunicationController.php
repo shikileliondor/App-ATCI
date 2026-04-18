@@ -69,8 +69,8 @@ class CommunicationController extends Controller
             'recipient_mode' => ['required', 'in:all,departement,comite,custom'],
             'departement_id' => ['nullable', 'integer', 'exists:departements,id'],
             'comite_id' => ['nullable', 'integer', 'exists:comites,id'],
-            'member_ids' => ['array'],
-            'member_ids.*' => ['integer', 'exists:membres,id'],
+            'selected_member_ids' => ['array'],
+            'selected_member_ids.*' => ['integer', 'exists:membres,id'],
             'template_id' => ['nullable', 'integer', 'exists:communication_templates,id'],
             'message' => ['required', 'string', 'max:2000'],
         ]);
@@ -122,13 +122,21 @@ class CommunicationController extends Controller
 
     private function resolveRecipients(array $validated): Collection
     {
-        $query = Membre::query()->select('id', 'telephone');
+        $baseQuery = Membre::query()->select('id', 'telephone');
 
-        return match ($validated['recipient_mode']) {
-            'all' => $query->get(),
-            'departement' => $query->where('departement_id', $validated['departement_id'] ?? 0)->get(),
-            'comite' => $query->where('comite_id', $validated['comite_id'] ?? 0)->get(),
-            'custom' => $query->whereIn('id', $validated['member_ids'] ?? [])->get(),
+        $members = match ($validated['recipient_mode']) {
+            'all' => $baseQuery->get(),
+            'departement' => $baseQuery->where('departement_id', $validated['departement_id'] ?? 0)->get(),
+            'comite' => $baseQuery->where('comite_id', $validated['comite_id'] ?? 0)->get(),
+            'custom' => $baseQuery->get(),
         };
+
+        if (array_key_exists('selected_member_ids', $validated)) {
+            $selectedMemberIds = collect($validated['selected_member_ids'] ?? [])->map(fn ($id) => (int) $id)->all();
+
+            return $members->whereIn('id', $selectedMemberIds)->values();
+        }
+
+        return $members;
     }
 }
