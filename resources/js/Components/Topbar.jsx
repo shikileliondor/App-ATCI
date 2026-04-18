@@ -22,10 +22,6 @@ function IconBell() {
     return <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M15 17H5.8a1 1 0 0 1-.8-1.6l1.2-1.6V10a6 6 0 0 1 12 0v3.8l1.2 1.6a1 1 0 0 1-.8 1.6H17" /><path d="M9.5 19a2.5 2.5 0 0 0 5 0" /></svg>;
 }
 
-function IconApp() {
-    return <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M4 10h16" /><path d="M10 20V10" /></svg>;
-}
-
 function MenuIconProfile() {
     return <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" /><path d="M4 20a8 8 0 0 1 16 0" /></svg>;
 }
@@ -86,12 +82,6 @@ export default function Topbar({ title, onOpenSidebar, userName, userEmail, user
                         <IconBell />
                         <span className="absolute right-1 top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-semibold text-white">82</span>
                     </button>
-
-                    <div className="hidden items-center gap-2 px-2 text-[#12305d] md:flex">
-                        <IconApp />
-                        <span className="font-medium tracking-wide">DYM ANGRE</span>
-                        <span className="text-xs">▾</span>
-                    </div>
 
                     <Menu as="div" className="relative">
                         <MenuButton className="flex items-center gap-3 rounded-xl border border-transparent px-2 py-1 transition hover:border-slate-200 hover:bg-slate-50">
