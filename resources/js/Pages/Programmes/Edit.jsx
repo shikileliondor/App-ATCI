@@ -11,10 +11,10 @@ export default function Edit() {
         nom: '',
         date_debut: '',
         date_fin: '',
-        heure: '',
         lieu: '',
         description: '',
         statut: 'actif',
+        presences: [],
     });
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
@@ -22,19 +22,30 @@ export default function Edit() {
 
     useEffect(() => {
         window.axios.get(`/api/programmes/${id}`).then((response) => {
-            const programme = response.data?.data;
+            const payload = response.data?.data ?? {};
+            const programme = payload.programme ?? {};
+            const presences = payload.presences ?? [];
+
             setData({
                 nom: programme.nom ?? '',
                 date_debut: programme.date_debut ?? '',
                 date_fin: programme.date_fin ?? '',
-                heure: programme.heure ?? '',
                 lieu: programme.lieu ?? '',
                 description: programme.description ?? '',
                 statut: programme.statut ?? 'actif',
+                presences: presences.map((presence) => ({
+                    date: presence.date,
+                    hommes_adultes: Number(presence.hommes_adultes ?? 0),
+                    femmes_adultes: Number(presence.femmes_adultes ?? 0),
+                    jeunes_hommes: Number(presence.jeunes_hommes ?? 0),
+                    jeunes_filles: Number(presence.jeunes_filles ?? 0),
+                    enfants: Number(presence.enfants ?? 0),
+                    visiteurs: Number(presence.visiteurs ?? 0),
+                })),
             });
             setLoading(false);
         });
-    }, [id]);
+    }, [id, setData]);
 
     const submit = async (event) => {
         event.preventDefault();
@@ -69,7 +80,7 @@ export default function Edit() {
             <Head title="Modifier programme" />
             <PageContainer>
                 {loading ? <p className="text-sm text-gray-500">Chargement...</p> : (
-                    <div className="mx-auto max-w-4xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <div className="mx-auto max-w-6xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                         <ProgrammesForm values={data} setValues={setData} errors={errors} onSubmit={submit} processing={processing} submitLabel="Enregistrer les modifications" />
                     </div>
                 )}

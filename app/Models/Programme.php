@@ -16,7 +16,6 @@ class Programme extends Model
         'nom',
         'date_debut',
         'date_fin',
-        'heure',
         'lieu',
         'description',
         'statut',

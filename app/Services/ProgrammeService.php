@@ -14,6 +14,15 @@ use Throwable;
 
 class ProgrammeService
 {
+    private const PRESENCE_FIELDS = [
+        'hommes_adultes',
+        'femmes_adultes',
+        'jeunes_hommes',
+        'jeunes_filles',
+        'enfants',
+        'visiteurs',
+    ];
+
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
         return Programme::query()->orderBy('date_debut')->paginate($perPage);
@@ -40,9 +49,11 @@ class ProgrammeService
     {
         try {
             return DB::transaction(function () use ($programme, $data): ProgrammePresence {
+                $presencePayload = $this->normalizePresencePayload($data);
+
                 return $programme->presences()->updateOrCreate(
                     ['date' => $data['date']],
-                    ['nombre_participants' => $data['nombre_participants']]
+                    $presencePayload
                 );
             });
         } catch (Throwable $exception) {
@@ -58,7 +69,8 @@ class ProgrammeService
 
         try {
             return DB::transaction(function () use ($presence, $data): ProgrammePresence {
-                $presence->fill($data);
+                $payload = $this->normalizePresencePayload($data, $presence);
+                $presence->fill($payload);
                 $presence->save();
 
                 return $presence->refresh();
@@ -85,7 +97,13 @@ class ProgrammeService
     {
         try {
             return DB::transaction(function () use ($data): Programme {
-                return Programme::query()->create($this->applyBusinessRules($data));
+                $presences = $data['presences'] ?? [];
+                unset($data['presences']);
+
+                $programme = Programme::query()->create($this->applyBusinessRules($data));
+                $this->syncPresences($programme, $presences);
+
+                return $programme->refresh();
             });
         } catch (Throwable $exception) {
             throw new RuntimeException('Erreur lors de la création du programme.', 0, $exception);
@@ -96,8 +114,15 @@ class ProgrammeService
     {
         try {
             return DB::transaction(function () use ($programme, $data): Programme {
+                $presences = $data['presences'] ?? null;
+                unset($data['presences']);
+
                 $programme->fill($this->applyBusinessRules($data, $programme));
                 $programme->save();
+
+                if (is_array($presences)) {
+                    $this->syncPresences($programme, $presences);
+                }
 
                 return $programme->refresh();
             });
@@ -122,6 +147,38 @@ class ProgrammeService
         }
 
         return $data;
+    }
+
+    private function syncPresences(Programme $programme, array $presences): void
+    {
+        $programme->presences()->delete();
+
+        if ($presences === []) {
+            return;
+        }
+
+        foreach ($presences as $presence) {
+            $payload = $this->normalizePresencePayload($presence);
+            $payload['date'] = $presence['date'];
+            $programme->presences()->create($payload);
+        }
+    }
+
+    private function normalizePresencePayload(array $data, ?ProgrammePresence $existingPresence = null): array
+    {
+        $payload = [];
+
+        foreach (self::PRESENCE_FIELDS as $field) {
+            $payload[$field] = (int) ($data[$field] ?? $existingPresence?->{$field} ?? 0);
+        }
+
+        $payload['nombre_participants'] = array_sum($payload);
+
+        if (array_key_exists('date', $data)) {
+            $payload['date'] = $data['date'];
+        }
+
+        return $payload;
     }
 
     private function buildStats(Collection $presences): array
