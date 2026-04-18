@@ -1,3 +1,3 @@
-export default function PageContainer({ children }) {
-    return <div className="space-y-6">{children}</div>;
+export default function PageContainer({ children, className = '' }) {
+    return <div className={`space-y-6 ${className}`.trim()}>{children}</div>;
 }

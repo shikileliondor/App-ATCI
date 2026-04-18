@@ -1,39 +1,50 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import MainLayout from '@/Layouts/MainLayout';
+import PageContainer from '@/Layouts/PageContainer';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 
+function ProfileCard({ title, description, children }) {
+    return (
+        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+            <p className="mt-1 text-sm text-slate-500">{description}</p>
+            <div className="mt-5">{children}</div>
+        </section>
+    );
+}
+
 export default function Edit({ mustVerifyEmail, status }) {
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Profile
-                </h2>
-            }
-        >
-            <Head title="Profile" />
+        <MainLayout title="Mon profil" subtitle="Gérez vos informations personnelles et la sécurité du compte.">
+            <Head title="Mon profil" />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <UpdateProfileInformationForm
-                            mustVerifyEmail={mustVerifyEmail}
-                            status={status}
-                            className="max-w-xl"
-                        />
-                    </div>
+            <PageContainer className="space-y-4">
+                <ProfileCard
+                    title="Identité"
+                    description="Vos informations visibles dans l'application."
+                >
+                    <UpdateProfileInformationForm
+                        mustVerifyEmail={mustVerifyEmail}
+                        status={status}
+                    />
+                </ProfileCard>
 
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <UpdatePasswordForm className="max-w-xl" />
-                    </div>
+                <ProfileCard
+                    title="Mot de passe"
+                    description="Renforcez la sécurité de votre compte."
+                >
+                    <UpdatePasswordForm />
+                </ProfileCard>
 
-                    <div className="bg-white p-4 shadow sm:rounded-lg sm:p-8">
-                        <DeleteUserForm className="max-w-xl" />
-                    </div>
-                </div>
-            </div>
-        </AuthenticatedLayout>
+                <ProfileCard
+                    title="Zone sensible"
+                    description="Opérations critiques liées à votre compte."
+                >
+                    <DeleteUserForm />
+                </ProfileCard>
+            </PageContainer>
+        </MainLayout>
     );
 }
