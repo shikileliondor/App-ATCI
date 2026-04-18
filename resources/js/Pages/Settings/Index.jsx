@@ -96,11 +96,11 @@ export default function SettingsIndex(props) {
                                 <div><Label>Téléphone</Label><input value={general.phone} onChange={(e) => setGeneral((v) => ({ ...v, phone: e.target.value }))} className="w-full rounded-xl border-gray-300" /></div>
                                 <div className="md:col-span-2"><Label>Adresse</Label><textarea value={general.address} onChange={(e) => setGeneral((v) => ({ ...v, address: e.target.value }))} className="w-full rounded-xl border-gray-300" rows={3} /></div>
                                 <div className="md:col-span-2">
-                                    <Label>Logo</Label>
-                                    <div className="flex items-center gap-3">
-                                        {logoUrl ? <img src={logoUrl} className="h-14 w-14 rounded-lg border border-gray-200 object-contain p-1" alt="Logo" /> : <span className="text-sm text-gray-500">Aucun logo défini</span>}
-                                        <input type="file" accept="image/*" onChange={(e) => setGeneral((v) => ({ ...v, logo: e.target.files?.[0] ?? null }))} />
-                                        {logoUrl ? <button type="button" onClick={() => setGeneral((v) => ({ ...v, remove_logo: true, logo: null }))} className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600">Supprimer logo</button> : null}
+                                    <Label>Logo (affiché dans la sidebar)</Label>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        {logoUrl ? <img src={logoUrl} className="h-16 w-16 rounded-2xl border border-gray-200 bg-white object-contain p-1 shadow-sm" alt="Logo" /> : <span className="text-sm text-gray-500">Aucun logo défini</span>}
+                                        <input type="file" accept="image/*" className="text-sm" onChange={(e) => setGeneral((v) => ({ ...v, logo: e.target.files?.[0] ?? null, remove_logo: false }))} />
+                                        {logoUrl ? <button type="button" onClick={() => setGeneral((v) => ({ ...v, remove_logo: true, logo: null }))} className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600">Supprimer logo</button> : null}<p className="w-full text-xs text-gray-500">Astuce : utilisez un logo carré en PNG pour un rendu net dans la navigation.</p>
                                     </div>
                                 </div>
                                 <div className="md:col-span-2"><button className="rounded-xl bg-[#1a56a0] px-4 py-2 text-sm font-medium text-white">Enregistrer</button></div>
