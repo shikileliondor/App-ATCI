@@ -1,4 +1,5 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { useMemo } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import PageContainer from '@/Layouts/PageContainer';
 
@@ -15,7 +16,7 @@ const situationOptions = [
 ];
 
 export default function Create() {
-    const { departements = [], comites = [] } = usePage().props;
+    const { departements = [], comites = [], general = {} } = usePage().props;
 
     const { data, setData, post, processing, errors } = useForm({
         nom: '',
@@ -24,23 +25,32 @@ export default function Create() {
         date_naissance: '',
         telephone: '',
         email: '',
+        photo: null,
+        remove_photo: false,
         adresse: '',
         departement_id: '',
         comite_id: '',
-        est_converti: false,
-        date_conversion: '',
         est_baptise: false,
         date_bapteme: '',
         situation_matrimoniale: 'celibataire',
         profession: '',
+        fonction_eglise: '',
+        niveau_etude: '',
+        contact_urgence_nom: '',
+        contact_urgence_telephone: '',
         statut: 'actif',
         date_inscription: new Date().toISOString().slice(0, 10),
         observations: '',
+        pdf_afficher_logo: true,
+        pdf_afficher_nom_eglise: true,
+        pdf_titre_document: 'Fiche de membre',
     });
+
+    const logoUrl = useMemo(() => (general?.logo_path ? `/storage/${general.logo_path}` : null), [general?.logo_path]);
 
     const submit = (e) => {
         e.preventDefault();
-        post('/membres');
+        post('/membres', { forceFormData: true });
     };
 
     return (
@@ -49,27 +59,26 @@ export default function Create() {
 
             <PageContainer>
                 <Card className="mx-auto w-full max-w-5xl">
-                    <form onSubmit={submit} className="space-y-5">
+                    <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-5 sm:grid-cols-2">
                             {[
                                 ['nom', 'Nom'],
                                 ['prenom', 'Prénom'],
                                 ['telephone', 'Téléphone'],
                                 ['email', 'Email'],
-                                ['profession', 'Profession'],
                             ].map(([field, label]) => (
                                 <div key={field}>
                                     <label htmlFor={field} className="mb-1.5 block text-sm font-medium text-gray-700">{label}</label>
-                                    <input
-                                        id={field}
-                                        type={field === 'email' ? 'email' : 'text'}
-                                        value={data[field]}
-                                        onChange={(e) => setData(field, e.target.value)}
-                                        className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]"
-                                    />
+                                    <input id={field} type={field === 'email' ? 'email' : 'text'} value={data[field]} onChange={(e) => setData(field, e.target.value)} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]" />
                                     {errors[field] ? <p className="mt-1.5 text-sm text-red-600">{errors[field]}</p> : null}
                                 </div>
                             ))}
+
+                            <div>
+                                <label htmlFor="photo" className="mb-1.5 block text-sm font-medium text-gray-700">Photo du membre</label>
+                                <input id="photo" type="file" accept="image/*" onChange={(e) => setData('photo', e.target.files?.[0] ?? null)} className="w-full rounded-xl border-gray-300 text-sm" />
+                                {errors.photo ? <p className="mt-1.5 text-sm text-red-600">{errors.photo}</p> : null}
+                            </div>
 
                             <div>
                                 <label htmlFor="sexe" className="mb-1.5 block text-sm font-medium text-gray-700">Sexe</label>
@@ -77,17 +86,18 @@ export default function Create() {
                                     <option value="homme">Homme</option>
                                     <option value="femme">Femme</option>
                                 </select>
-                                {errors.sexe ? <p className="mt-1.5 text-sm text-red-600">{errors.sexe}</p> : null}
+                            </div>
+
+                            <div>
+                                <label htmlFor="date_naissance" className="mb-1.5 block text-sm font-medium text-gray-700">Date de naissance</label>
+                                <input id="date_naissance" type="date" value={data.date_naissance} onChange={(e) => setData('date_naissance', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]" />
                             </div>
 
                             <div>
                                 <label htmlFor="situation_matrimoniale" className="mb-1.5 block text-sm font-medium text-gray-700">Situation matrimoniale</label>
                                 <select id="situation_matrimoniale" value={data.situation_matrimoniale} onChange={(e) => setData('situation_matrimoniale', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]">
-                                    {situationOptions.map((option) => (
-                                        <option key={option.value} value={option.value}>{option.label}</option>
-                                    ))}
+                                    {situationOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                                 </select>
-                                {errors.situation_matrimoniale ? <p className="mt-1.5 text-sm text-red-600">{errors.situation_matrimoniale}</p> : null}
                             </div>
 
                             <div>
@@ -96,86 +106,96 @@ export default function Create() {
                                     <option value="actif">Actif</option>
                                     <option value="inactif">Inactif</option>
                                 </select>
-                                {errors.statut ? <p className="mt-1.5 text-sm text-red-600">{errors.statut}</p> : null}
                             </div>
 
                             <div>
                                 <label htmlFor="departement_id" className="mb-1.5 block text-sm font-medium text-gray-700">Département</label>
                                 <select id="departement_id" value={data.departement_id} onChange={(e) => setData('departement_id', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]">
                                     <option value="">Sélectionner...</option>
-                                    {departements.map((departement) => (
-                                        <option key={departement.id} value={departement.id}>{departement.nom}</option>
-                                    ))}
+                                    {departements.map((departement) => <option key={departement.id} value={departement.id}>{departement.nom}</option>)}
                                 </select>
-                                {errors.departement_id ? <p className="mt-1.5 text-sm text-red-600">{errors.departement_id}</p> : null}
                             </div>
 
                             <div>
                                 <label htmlFor="comite_id" className="mb-1.5 block text-sm font-medium text-gray-700">Comité (optionnel)</label>
                                 <select id="comite_id" value={data.comite_id} onChange={(e) => setData('comite_id', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]">
                                     <option value="">Aucun</option>
-                                    {comites.map((comite) => (
-                                        <option key={comite.id} value={comite.id}>{comite.nom}</option>
-                                    ))}
+                                    {comites.map((comite) => <option key={comite.id} value={comite.id}>{comite.nom}</option>)}
                                 </select>
-                                {errors.comite_id ? <p className="mt-1.5 text-sm text-red-600">{errors.comite_id}</p> : null}
-                            </div>
-
-                            <div>
-                                <label htmlFor="date_naissance" className="mb-1.5 block text-sm font-medium text-gray-700">Date de naissance</label>
-                                <input id="date_naissance" type="date" value={data.date_naissance} onChange={(e) => setData('date_naissance', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]" />
-                                {errors.date_naissance ? <p className="mt-1.5 text-sm text-red-600">{errors.date_naissance}</p> : null}
                             </div>
 
                             <div>
                                 <label htmlFor="date_inscription" className="mb-1.5 block text-sm font-medium text-gray-700">Date inscription</label>
                                 <input id="date_inscription" type="date" value={data.date_inscription} onChange={(e) => setData('date_inscription', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]" />
-                                {errors.date_inscription ? <p className="mt-1.5 text-sm text-red-600">{errors.date_inscription}</p> : null}
                             </div>
                         </div>
 
                         <div>
                             <label htmlFor="adresse" className="mb-1.5 block text-sm font-medium text-gray-700">Adresse</label>
                             <textarea id="adresse" value={data.adresse} onChange={(e) => setData('adresse', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]" rows={2} />
-                            {errors.adresse ? <p className="mt-1.5 text-sm text-red-600">{errors.adresse}</p> : null}
                         </div>
 
-                        <div className="grid gap-5 sm:grid-cols-2">
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                                <input type="checkbox" checked={data.est_converti} onChange={(e) => setData('est_converti', e.target.checked)} className="rounded border-gray-300 text-[#1a56a0] focus:ring-[#1a56a0]" />
-                                Converti
-                            </label>
+                        <div className="grid gap-5 rounded-2xl border border-gray-100 bg-gray-50 p-4 sm:grid-cols-2">
                             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                                 <input type="checkbox" checked={data.est_baptise} onChange={(e) => setData('est_baptise', e.target.checked)} className="rounded border-gray-300 text-[#1a56a0] focus:ring-[#1a56a0]" />
                                 Baptisé
                             </label>
-
-                            <div>
-                                <label htmlFor="date_conversion" className="mb-1.5 block text-sm font-medium text-gray-700">Date conversion</label>
-                                <input id="date_conversion" type="date" disabled={!data.est_converti} value={data.date_conversion} onChange={(e) => setData('date_conversion', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm disabled:bg-gray-100 focus:border-[#1a56a0] focus:ring-[#1a56a0]" />
-                                {errors.date_conversion ? <p className="mt-1.5 text-sm text-red-600">{errors.date_conversion}</p> : null}
-                            </div>
-
                             <div>
                                 <label htmlFor="date_bapteme" className="mb-1.5 block text-sm font-medium text-gray-700">Date baptême</label>
                                 <input id="date_bapteme" type="date" disabled={!data.est_baptise} value={data.date_bapteme} onChange={(e) => setData('date_bapteme', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm disabled:bg-gray-100 focus:border-[#1a56a0] focus:ring-[#1a56a0]" />
-                                {errors.date_bapteme ? <p className="mt-1.5 text-sm text-red-600">{errors.date_bapteme}</p> : null}
+                            </div>
+                        </div>
+
+                        <div className="grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label htmlFor="profession" className="mb-1.5 block text-sm font-medium text-gray-700">Profession</label>
+                                <input id="profession" type="text" value={data.profession} onChange={(e) => setData('profession', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm" />
+                            </div>
+                            <div>
+                                <label htmlFor="fonction_eglise" className="mb-1.5 block text-sm font-medium text-gray-700">Fonction dans l'église</label>
+                                <input id="fonction_eglise" type="text" value={data.fonction_eglise} onChange={(e) => setData('fonction_eglise', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm" />
+                            </div>
+                            <div>
+                                <label htmlFor="niveau_etude" className="mb-1.5 block text-sm font-medium text-gray-700">Niveau d'étude</label>
+                                <input id="niveau_etude" type="text" value={data.niveau_etude} onChange={(e) => setData('niveau_etude', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm" />
+                            </div>
+                            <div>
+                                <label htmlFor="contact_urgence_nom" className="mb-1.5 block text-sm font-medium text-gray-700">Contact d'urgence (Nom)</label>
+                                <input id="contact_urgence_nom" type="text" value={data.contact_urgence_nom} onChange={(e) => setData('contact_urgence_nom', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm" />
+                            </div>
+                            <div>
+                                <label htmlFor="contact_urgence_telephone" className="mb-1.5 block text-sm font-medium text-gray-700">Contact d'urgence (Téléphone)</label>
+                                <input id="contact_urgence_telephone" type="text" value={data.contact_urgence_telephone} onChange={(e) => setData('contact_urgence_telephone', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm" />
+                            </div>
+                        </div>
+
+                        <div className="space-y-3 rounded-2xl border border-blue-100 bg-blue-50/60 p-4">
+                            <h3 className="text-sm font-semibold text-[#1a56a0]">Paramètres document PDF</h3>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={data.pdf_afficher_logo} onChange={(e) => setData('pdf_afficher_logo', e.target.checked)} className="rounded border-gray-300 text-[#1a56a0]" />Afficher le logo</label>
+                                <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={data.pdf_afficher_nom_eglise} onChange={(e) => setData('pdf_afficher_nom_eglise', e.target.checked)} className="rounded border-gray-300 text-[#1a56a0]" />Afficher le nom de l'église</label>
+                            </div>
+                            <div>
+                                <label htmlFor="pdf_titre_document" className="mb-1.5 block text-sm font-medium text-gray-700">Titre du document</label>
+                                <input id="pdf_titre_document" type="text" value={data.pdf_titre_document} onChange={(e) => setData('pdf_titre_document', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm" />
+                            </div>
+                            <div className="flex items-center gap-3 rounded-xl border border-dashed border-blue-200 bg-white p-3 text-xs text-gray-600">
+                                {data.pdf_afficher_logo && logoUrl ? <img src={logoUrl} alt="Logo église" className="h-10 w-10 rounded-md border border-gray-200 object-contain p-1" /> : null}
+                                <div>
+                                    <p className="font-medium text-gray-800">{data.pdf_titre_document || 'Fiche de membre'}</p>
+                                    {data.pdf_afficher_nom_eglise ? <p>{general?.church_name || 'Nom de l\'église non défini'}</p> : null}
+                                </div>
                             </div>
                         </div>
 
                         <div>
                             <label htmlFor="observations" className="mb-1.5 block text-sm font-medium text-gray-700">Observations</label>
                             <textarea id="observations" value={data.observations} onChange={(e) => setData('observations', e.target.value)} className="w-full rounded-xl border-gray-300 text-sm focus:border-[#1a56a0] focus:ring-[#1a56a0]" rows={3} />
-                            {errors.observations ? <p className="mt-1.5 text-sm text-red-600">{errors.observations}</p> : null}
                         </div>
 
                         <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 sm:flex-row sm:justify-end">
-                            <Link href="/membres" className="inline-flex items-center justify-center rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
-                                Annuler
-                            </Link>
-                            <button type="submit" disabled={processing} className="inline-flex items-center justify-center rounded-xl bg-[#1a56a0] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#174b8a] disabled:cursor-not-allowed disabled:opacity-60">
-                                {processing ? 'Enregistrement...' : 'Créer le membre'}
-                            </button>
+                            <Link href="/membres" className="inline-flex items-center justify-center rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50">Annuler</Link>
+                            <button type="submit" disabled={processing} className="inline-flex items-center justify-center rounded-xl bg-[#1a56a0] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#174b8a] disabled:cursor-not-allowed disabled:opacity-60">{processing ? 'Enregistrement...' : 'Créer le membre'}</button>
                         </div>
                     </form>
                 </Card>

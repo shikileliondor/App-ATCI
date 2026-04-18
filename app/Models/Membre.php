@@ -17,6 +17,7 @@ class Membre extends Model
         'date_naissance',
         'telephone',
         'email',
+        'photo_path',
         'adresse',
         'departement_id',
         'comite_id',
@@ -26,9 +27,16 @@ class Membre extends Model
         'date_bapteme',
         'situation_matrimoniale',
         'profession',
+        'fonction_eglise',
+        'niveau_etude',
+        'contact_urgence_nom',
+        'contact_urgence_telephone',
         'statut',
         'date_inscription',
         'observations',
+        'pdf_afficher_logo',
+        'pdf_afficher_nom_eglise',
+        'pdf_titre_document',
     ];
 
     protected $casts = [
@@ -38,6 +46,8 @@ class Membre extends Model
         'date_conversion' => 'date',
         'date_bapteme' => 'date',
         'date_inscription' => 'date',
+        'pdf_afficher_logo' => 'boolean',
+        'pdf_afficher_nom_eglise' => 'boolean',
     ];
 
     public function departement(): BelongsTo
