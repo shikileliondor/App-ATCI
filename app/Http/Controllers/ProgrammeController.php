@@ -19,7 +19,7 @@ class ProgrammeController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'message' => 'Liste des programmes récupérée avec succès.',
+            'message' => 'Liste des événements récupérée avec succès.',
             'data' => $this->programmeService->paginate(),
         ]);
     }
@@ -29,7 +29,7 @@ class ProgrammeController extends Controller
         $programme = $this->programmeService->create($request->validated());
 
         return response()->json([
-            'message' => 'Programme créé avec succès.',
+            'message' => 'Événement créé avec succès.',
             'data' => $programme,
         ], 201);
     }
@@ -37,7 +37,7 @@ class ProgrammeController extends Controller
     public function show(Programme $programme): JsonResponse
     {
         return response()->json([
-            'message' => 'Programme récupéré avec succès.',
+            'message' => 'Événement récupéré avec succès.',
             'data' => $this->programmeService->getProgrammeDashboard($programme->id),
         ]);
     }
@@ -47,7 +47,7 @@ class ProgrammeController extends Controller
         $updatedProgramme = $this->programmeService->update($programme, $request->validated());
 
         return response()->json([
-            'message' => 'Programme mis à jour avec succès.',
+            'message' => 'Événement mis à jour avec succès.',
             'data' => $updatedProgramme,
         ]);
     }
@@ -57,7 +57,7 @@ class ProgrammeController extends Controller
         $this->programmeService->delete($programme);
 
         return response()->json([
-            'message' => 'Programme supprimé avec succès.',
+            'message' => 'Événement supprimé avec succès.',
         ]);
     }
 }

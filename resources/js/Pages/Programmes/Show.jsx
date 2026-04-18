@@ -3,18 +3,21 @@ import { useEffect, useMemo, useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import PageContainer from '@/Layouts/PageContainer';
 import Button from '@/Components/ui/Button';
-import StatusBadge from '@/Components/programmes/StatusBadge';
-import Timeline from '@/Components/programmes/Timeline';
-import StatsCard from '@/Components/programmes/StatsCard';
-import PresenceChart from '@/Components/programmes/PresenceChart';
-import PresenceTable from '@/Components/programmes/PresenceTable';
-import PresenceForm from '@/Components/programmes/PresenceForm';
-import ConfirmDialog from '@/Components/programmes/ConfirmDialog';
 
-function durationInDays(start, end) {
-    const begin = new Date(`${start}T00:00:00`);
-    const finish = new Date(`${end}T00:00:00`);
-    return Math.round((finish - begin) / (1000 * 60 * 60 * 24)) + 1;
+function PercentBar({ label, value, total }) {
+    const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+
+    return (
+        <div className="space-y-1">
+            <div className="flex items-center justify-between text-xs text-gray-600">
+                <span>{label}</span>
+                <span>{value} ({pct}%)</span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-100">
+                <div className="h-2 rounded-full bg-blue-500" style={{ width: `${pct}%` }} />
+            </div>
+        </div>
+    );
 }
 
 export default function Show() {
@@ -22,33 +25,32 @@ export default function Show() {
     const id = url.split('/')[2];
 
     const [programme, setProgramme] = useState(null);
-    const [presences, setPresences] = useState([]);
-    const [stats, setStats] = useState({ total: 0, moyenne: 0, max: 0, min: 0, jours: 0 });
+    const [participants, setParticipants] = useState([]);
+    const [stats, setStats] = useState({ has_data: false, total: 0, attendance_rate: null, gender_distribution: {}, department_distribution: {} });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const [openForm, setOpenForm] = useState(false);
-    const [editingPresence, setEditingPresence] = useState(null);
-    const [presenceToDelete, setPresenceToDelete] = useState(null);
-    const [sortDirection, setSortDirection] = useState('asc');
-    const [toast, setToast] = useState(null);
-
-    const showToast = (message, type = 'success') => {
-        setToast({ message, type });
-        setTimeout(() => setToast(null), 3000);
-    };
+    const [settings, setSettings] = useState({ participants_enabled: false, participants_mode: 'simple', participants_expected: '', participants_actual: '' });
+    const [participantForm, setParticipantForm] = useState({ nom: '', sexe: '', departement: '' });
 
     const loadDashboard = async () => {
         try {
             const response = await window.axios.get(`/api/programmes/${id}`);
             const payload = response.data?.data ?? {};
+            const event = payload.programme ?? null;
 
-            setProgramme(payload.programme ?? null);
-            setPresences(payload.presences ?? []);
-            setStats(payload.stats ?? { total: 0, moyenne: 0, max: 0, min: 0, jours: 0 });
+            setProgramme(event);
+            setParticipants(payload.participants ?? []);
+            setStats(payload.stats ?? { has_data: false, total: 0, attendance_rate: null, gender_distribution: {}, department_distribution: {} });
+            setSettings({
+                participants_enabled: Boolean(event?.participants_enabled),
+                participants_mode: event?.participants_mode ?? 'simple',
+                participants_expected: event?.participants_expected ?? '',
+                participants_actual: event?.participants_actual ?? '',
+            });
             setError('');
         } catch {
-            setError('Impossible de charger les statistiques du programme.');
+            setError('Impossible de charger cet événement.');
         }
     };
 
@@ -56,184 +58,182 @@ export default function Show() {
         loadDashboard();
     }, [id]);
 
-    const duration = useMemo(() => {
-        if (!programme) return 0;
-        return durationInDays(programme.date_debut, programme.date_fin);
-    }, [programme]);
-
-    const trend = useMemo(() => {
-        if (presences.length < 2) return null;
-
-        const first = Number(presences[0].nombre_participants ?? 0);
-        const last = Number(presences[presences.length - 1].nombre_participants ?? 0);
-
-        if (last > first) return 'up';
-        if (last < first) return 'down';
-        return 'stable';
-    }, [presences]);
-
-    const sortedPresences = useMemo(() => {
-        const items = [...presences];
-        items.sort((a, b) => {
-            if (sortDirection === 'asc') return new Date(a.date) - new Date(b.date);
-            return new Date(b.date) - new Date(a.date);
-        });
-        return items;
-    }, [presences, sortDirection]);
-
-    const handleSubmitPresence = async (formData) => {
+    const saveSettings = async () => {
         try {
             setLoading(true);
-
-            if (editingPresence) {
-                await window.axios.put(`/api/programmes/${programme.id}/presences/${editingPresence.id}`, formData);
-                showToast('Présence mise à jour avec succès.');
-            } else {
-                await window.axios.post(`/api/programmes/${programme.id}/presences`, formData);
-                showToast('Présence ajoutée avec succès.');
-            }
-
-            setOpenForm(false);
-            setEditingPresence(null);
+            await window.axios.put(`/api/programmes/${id}/participants/settings`, {
+                participants_enabled: settings.participants_enabled,
+                participants_mode: settings.participants_enabled ? settings.participants_mode : null,
+                participants_expected: settings.participants_enabled ? (settings.participants_expected === '' ? null : Number(settings.participants_expected)) : null,
+                participants_actual: settings.participants_enabled ? (settings.participants_actual === '' ? null : Number(settings.participants_actual)) : null,
+            });
             await loadDashboard();
         } catch {
-            showToast('Erreur lors de l’enregistrement de la présence.', 'error');
+            setError('Impossible d’enregistrer la configuration des participants.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDeletePresence = async () => {
-        if (!presenceToDelete) return;
+    const addParticipant = async (event) => {
+        event.preventDefault();
 
         try {
             setLoading(true);
-            await window.axios.delete(`/api/programmes/${programme.id}/presences/${presenceToDelete.id}`);
-            setPresenceToDelete(null);
-            showToast('Présence supprimée avec succès.');
+            await window.axios.post(`/api/programmes/${id}/participants`, {
+                nom: participantForm.nom,
+                sexe: participantForm.sexe || null,
+                departement: participantForm.departement || null,
+            });
+            setParticipantForm({ nom: '', sexe: '', departement: '' });
             await loadDashboard();
         } catch {
-            showToast('Erreur lors de la suppression.', 'error');
+            setError('Impossible d’ajouter ce participant.');
         } finally {
             setLoading(false);
         }
     };
+
+    const removeParticipant = async (participantId) => {
+        try {
+            setLoading(true);
+            await window.axios.delete(`/api/programmes/${id}/participants/${participantId}`);
+            await loadDashboard();
+        } catch {
+            setError('Impossible de supprimer ce participant.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const totalGender = useMemo(() => Object.values(stats.gender_distribution ?? {}).reduce((sum, value) => sum + Number(value), 0), [stats.gender_distribution]);
+    const totalDepartments = useMemo(() => Object.values(stats.department_distribution ?? {}).reduce((sum, value) => sum + Number(value), 0), [stats.department_distribution]);
 
     return (
-        <MainLayout title="Détails du programme" subtitle="Dashboard analytique de participation">
-            <Head title="Détails programme" />
+        <MainLayout title="Détail événement" subtitle="Vue moderne avec participants optionnels">
+            <Head title="Détail événement" />
             <PageContainer>
-                {toast ? (
-                    <div className={`mb-4 rounded-xl border px-4 py-3 text-sm ${toast.type === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
-                        {toast.message}
-                    </div>
-                ) : null}
-
-                {error ? <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+                {error ? <p className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
 
                 {!programme ? <p className="text-sm text-gray-500">Chargement...</p> : (
                     <div className="space-y-6">
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-                            <StatsCard title="Total participants" value={stats.total} icon="👥" />
-                            <StatsCard title="Moyenne / jour" value={stats.moyenne} icon="📊" />
-                            <StatsCard title="Jour max" value={stats.max} icon="📈" />
-                            <StatsCard title="Jour min" value={stats.min} icon="📉" />
-                            <StatsCard title="Nombre de jours" value={stats.jours} icon="🗓️" />
+                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                            <div className="flex items-start justify-between gap-4">
+                                <div>
+                                    <h2 className="text-2xl font-semibold text-gray-900">{programme.nom}</h2>
+                                    <p className="text-sm text-gray-500">{programme.type} • {programme.lieu}</p>
+                                </div>
+                                <Link href={`/programmes/${programme.id}/edit`}><Button>Modifier</Button></Link>
+                            </div>
+                            <div className="mt-4 grid gap-3 md:grid-cols-3 text-sm">
+                                <div className="rounded-xl bg-gray-50 p-3"><p className="text-xs text-gray-500">Date</p><p className="font-medium text-gray-900">{new Date(programme.date_debut).toLocaleDateString('fr-FR')} → {new Date(programme.date_fin).toLocaleDateString('fr-FR')}</p></div>
+                                <div className="rounded-xl bg-gray-50 p-3"><p className="text-xs text-gray-500">Heure</p><p className="font-medium text-gray-900">{programme.heure || 'Non définie'}</p></div>
+                                <div className="rounded-xl bg-gray-50 p-3"><p className="text-xs text-gray-500">Description</p><p className="font-medium text-gray-900">{programme.description || 'Aucune description'}</p></div>
+                            </div>
                         </div>
 
-                        <div className="grid gap-6 lg:grid-cols-3">
-                            <div className="space-y-6 lg:col-span-2">
-                                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                                    <div className="flex flex-wrap items-center justify-between gap-3">
-                                        <h2 className="text-2xl font-semibold text-gray-900">{programme.nom}</h2>
-                                        <StatusBadge status={programme.statut} />
-                                    </div>
-
-                                    <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-                                        {trend === 'up' ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">📈 Participation en hausse</span> : null}
-                                        {trend === 'down' ? <span className="rounded-full bg-rose-50 px-3 py-1 text-rose-700">📉 Participation en baisse</span> : null}
-                                        <span className={`rounded-full px-3 py-1 ${programme.statut === 'termine' ? 'bg-gray-100 text-gray-700' : 'bg-blue-50 text-blue-700'}`}>
-                                            {programme.statut === 'termine' ? 'Programme terminé' : 'Programme actif'}
-                                        </span>
-                                    </div>
-
-                                    <p className="mt-5 text-xs uppercase text-gray-500">Période</p>
-                                    <p className="text-sm font-medium text-gray-800">
-                                        {new Date(programme.date_debut).toLocaleDateString('fr-FR')} → {new Date(programme.date_fin).toLocaleDateString('fr-FR')}
-                                    </p>
-
-                                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                                        <div>
-                                            <p className="text-xs uppercase text-gray-500">Durée</p>
-                                            <p className="text-sm font-medium text-gray-800">{duration} jours</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs uppercase text-gray-500">Lieu</p>
-                                            <p className="text-sm font-medium text-gray-800">{programme.lieu}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-6 rounded-xl border border-gray-100 bg-gray-50 p-4">
-                                        <p className="text-sm font-semibold text-gray-900">Description</p>
-                                        <p className="mt-1 text-sm text-gray-700">{programme.description || 'Aucune description fournie.'}</p>
-                                    </div>
-                                </div>
-
-                                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                                    <h3 className="text-lg font-semibold text-gray-900">Graphique d'évolution</h3>
-                                    <p className="mb-4 text-sm text-gray-500">Suivi du total journalier par date.</p>
-                                    <PresenceChart presences={sortedPresences} />
-                                </div>
-
-                                <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                                    <div className="mb-4 flex items-center justify-between">
-                                        <h3 className="text-lg font-semibold text-gray-900">Tableau des statistiques journalières</h3>
-                                        <Button onClick={() => { setEditingPresence(null); setOpenForm(true); }}>Ajouter un jour</Button>
-                                    </div>
-                                    <PresenceTable
-                                        presences={sortedPresences}
-                                        sortDirection={sortDirection}
-                                        onSort={() => setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
-                                        onEdit={(presence) => {
-                                            setEditingPresence(presence);
-                                            setOpenForm(true);
-                                        }}
-                                        onDelete={(presence) => setPresenceToDelete(presence)}
+                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900">Participants</h3>
+                                <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                                    <input
+                                        type="checkbox"
+                                        checked={settings.participants_enabled}
+                                        onChange={(event) => setSettings((prev) => ({ ...prev, participants_enabled: event.target.checked }))}
                                     />
-                                </div>
-
-                                <Timeline startDate={programme.date_debut} endDate={programme.date_fin} />
+                                    Activer les participants
+                                </label>
                             </div>
 
-                            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-                                <p className="text-sm font-semibold text-gray-900">Actions rapides</p>
-                                <div className="mt-4 flex flex-col gap-2">
-                                    <Link href={`/programmes/${programme.id}/edit`}><Button className="w-full">Modifier le programme</Button></Link>
-                                    <Link href="/programmes"><Button variant="secondary" className="w-full">Retour à la liste</Button></Link>
+                            {settings.participants_enabled ? (
+                                <>
+                                    <div className="grid gap-3 md:grid-cols-4">
+                                        <label className="space-y-1 text-sm">
+                                            <span className="text-gray-600">Mode</span>
+                                            <select value={settings.participants_mode} onChange={(event) => setSettings((prev) => ({ ...prev, participants_mode: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2">
+                                                <option value="simple">Simple (nombres)</option>
+                                                <option value="advanced">Avancé (liste)</option>
+                                            </select>
+                                        </label>
+                                        <label className="space-y-1 text-sm">
+                                            <span className="text-gray-600">Nombre attendu</span>
+                                            <input type="number" min={0} value={settings.participants_expected} onChange={(event) => setSettings((prev) => ({ ...prev, participants_expected: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2" />
+                                        </label>
+                                        <label className="space-y-1 text-sm">
+                                            <span className="text-gray-600">Nombre réel</span>
+                                            <input type="number" min={0} value={settings.participants_actual} onChange={(event) => setSettings((prev) => ({ ...prev, participants_actual: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2" disabled={settings.participants_mode === 'advanced'} />
+                                        </label>
+                                        <div className="flex items-end">
+                                            <Button onClick={saveSettings} disabled={loading} className="w-full">Enregistrer</Button>
+                                        </div>
+                                    </div>
+
+                                    {settings.participants_mode === 'advanced' ? (
+                                        <div className="space-y-4 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                                            <form className="grid gap-3 md:grid-cols-4" onSubmit={addParticipant}>
+                                                <input required placeholder="Nom" value={participantForm.nom} onChange={(event) => setParticipantForm((prev) => ({ ...prev, nom: event.target.value }))} className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
+                                                <select value={participantForm.sexe} onChange={(event) => setParticipantForm((prev) => ({ ...prev, sexe: event.target.value }))} className="rounded-xl border border-gray-200 px-3 py-2 text-sm">
+                                                    <option value="">Sexe (optionnel)</option>
+                                                    <option value="homme">Homme</option>
+                                                    <option value="femme">Femme</option>
+                                                </select>
+                                                <input placeholder="Département (optionnel)" value={participantForm.departement} onChange={(event) => setParticipantForm((prev) => ({ ...prev, departement: event.target.value }))} className="rounded-xl border border-gray-200 px-3 py-2 text-sm" />
+                                                <Button type="submit" disabled={loading}>Ajouter</Button>
+                                            </form>
+
+                                            <div className="space-y-2">
+                                                {participants.length === 0 ? <p className="text-sm text-gray-500">Aucun participant ajouté.</p> : participants.map((participant) => (
+                                                    <div key={participant.id} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm">
+                                                        <span>{participant.nom} {participant.sexe ? `• ${participant.sexe}` : ''} {participant.departement ? `• ${participant.departement}` : ''}</span>
+                                                        <button type="button" className="text-red-600" onClick={() => removeParticipant(participant.id)}>Supprimer</button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : null}
+                                </>
+                            ) : (
+                                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+                                    Activez les participants pour ajouter un suivi (optionnel).
                                 </div>
-                            </div>
+                            )}
+                        </div>
+
+                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-3">
+                            <h3 className="text-lg font-semibold text-gray-900">Statistiques</h3>
+
+                            {!stats.has_data ? (
+                                <p className="rounded-lg bg-gray-50 p-3 text-sm text-gray-500">Aucune donnée disponible</p>
+                            ) : (
+                                <>
+                                    <div className="grid gap-3 md:grid-cols-3">
+                                        <div className="rounded-xl bg-blue-50 p-4"><p className="text-xs text-blue-700">Total participants</p><p className="text-2xl font-bold text-blue-900">{stats.total}</p></div>
+                                        <div className="rounded-xl bg-emerald-50 p-4"><p className="text-xs text-emerald-700">Taux de présence</p><p className="text-2xl font-bold text-emerald-900">{stats.attendance_rate ?? '-'}{stats.attendance_rate !== null ? '%' : ''}</p></div>
+                                        <div className="rounded-xl bg-purple-50 p-4"><p className="text-xs text-purple-700">Mode</p><p className="text-2xl font-bold text-purple-900">{programme.participants_mode === 'advanced' ? 'Avancé' : 'Simple'}</p></div>
+                                    </div>
+
+                                    {Object.keys(stats.gender_distribution ?? {}).length > 0 ? (
+                                        <div className="space-y-2">
+                                            <p className="text-sm font-medium text-gray-700">Répartition hommes / femmes</p>
+                                            {Object.entries(stats.gender_distribution).map(([key, value]) => (
+                                                <PercentBar key={key} label={key} value={Number(value)} total={totalGender} />
+                                            ))}
+                                        </div>
+                                    ) : null}
+
+                                    {Object.keys(stats.department_distribution ?? {}).length > 0 ? (
+                                        <div className="space-y-2">
+                                            <p className="text-sm font-medium text-gray-700">Répartition par département</p>
+                                            {Object.entries(stats.department_distribution).map(([key, value]) => (
+                                                <PercentBar key={key} label={key} value={Number(value)} total={totalDepartments} />
+                                            ))}
+                                        </div>
+                                    ) : null}
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
-
-                <PresenceForm
-                    open={openForm}
-                    onClose={() => {
-                        setOpenForm(false);
-                        setEditingPresence(null);
-                    }}
-                    onSubmit={handleSubmitPresence}
-                    loading={loading}
-                    initialValue={editingPresence}
-                />
-
-                <ConfirmDialog
-                    open={Boolean(presenceToDelete)}
-                    title="Supprimer cette présence ?"
-                    description="Cette action est définitive."
-                    onCancel={() => setPresenceToDelete(null)}
-                    onConfirm={handleDeletePresence}
-                />
             </PageContainer>
         </MainLayout>
     );
