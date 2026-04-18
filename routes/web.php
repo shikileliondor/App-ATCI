@@ -4,6 +4,7 @@ use App\Http\Controllers\ComiteController;
 use App\Http\Controllers\DepartementController;
 use App\Http\Controllers\MembreController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -47,6 +48,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/comptabilite/{id}/edit', fn () => Inertia::render('Comptabilite/Edit'))->name('comptabilite.edit');
     Route::redirect('/transactions', '/comptabilite')->name('transactions.index');
     Route::redirect('/rapport-comptabilite', '/comptabilite')->name('comptabilite.rapport');
+
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings/general', [SettingsController::class, 'updateGeneral'])->name('settings.general');
+    Route::post('/settings/financial', [SettingsController::class, 'updateFinancial'])->name('settings.financial');
+    Route::post('/settings/statistics', [SettingsController::class, 'updateStatistics'])->name('settings.statistics');
+    Route::post('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications');
+    Route::post('/settings/security', [SettingsController::class, 'updateSecurity'])->name('settings.security');
+    Route::post('/settings/appearance', [SettingsController::class, 'updateAppearance'])->name('settings.appearance');
+
+    Route::post('/settings/users', [SettingsController::class, 'storeUser'])->name('settings.users.store');
+    Route::put('/settings/users/{user}', [SettingsController::class, 'updateUser'])->name('settings.users.update');
+    Route::delete('/settings/users/{user}', [SettingsController::class, 'destroyUser'])->name('settings.users.destroy');
+
+    Route::post('/settings/event-types', [SettingsController::class, 'storeEventType'])->name('settings.event-types.store');
+    Route::put('/settings/event-types/{eventType}', [SettingsController::class, 'updateEventType'])->name('settings.event-types.update');
+    Route::delete('/settings/event-types/{eventType}', [SettingsController::class, 'destroyEventType'])->name('settings.event-types.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
