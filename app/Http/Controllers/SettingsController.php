@@ -52,6 +52,11 @@ class SettingsController extends Controller
                 'theme' => 'light',
                 'primary_color' => '#1a56a0',
             ]),
+            'pdf' => AppSetting::getValue('pdf', [
+                'show_logo' => true,
+                'show_church_name' => true,
+                'document_title' => 'Fiche de membre',
+            ]),
             'users' => User::query()->select('id', 'name', 'email', 'role', 'created_at')->orderBy('name')->get(),
             'departements' => Departement::query()->select('id', 'nom', 'description', 'statut')->orderBy('nom')->get(),
             'comites' => Comite::query()->select('id', 'nom', 'description', 'statut')->orderBy('nom')->get(),
@@ -162,6 +167,19 @@ class SettingsController extends Controller
         AppSetting::putValue('appearance', $validated);
 
         return back()->with('success', 'Apparence enregistrée.');
+    }
+
+    public function updatePdf(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'show_logo' => ['required', 'boolean'],
+            'show_church_name' => ['required', 'boolean'],
+            'document_title' => ['required', 'string', 'max:255'],
+        ]);
+
+        AppSetting::putValue('pdf', $validated);
+
+        return back()->with('success', 'Paramètres PDF enregistrés.');
     }
 
     public function storeUser(Request $request): RedirectResponse
