@@ -11,36 +11,6 @@ import { Avatar, AvatarFallback } from '@/Components/ui/Avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/Tabs';
 import { DropdownMenu, DropdownMenuItem } from '@/Components/ui/DropdownMenu';
 
-const kpiCards = [
-    { label: 'Solde global', value: '15 700 000 FCFA', trend: '+12.5 %', trendUp: true },
-    { label: 'Revenus du mois', value: '8 500 000 FCFA', trend: '+6.2 %', trendUp: true },
-    { label: 'Dépenses du mois', value: '6 222 000 FCFA', trend: '-2.4 %', trendUp: false },
-    { label: 'Nouveaux membres', value: '87', trend: '+16 cette semaine', trendUp: true },
-];
-
-const attendance = [65, 72, 69, 84, 80, 92, 89, 98, 95, 101, 97, 106];
-const months = ['Mai', 'Juin', 'Juil', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc', 'Jan', 'Fév', 'Mar', 'Avr'];
-
-const finances = [45, 68, 36, 61, 49, 75, 58];
-const financeLabels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-
-const members = [
-    { initials: 'AK', name: 'Adama Koné', phone: '+225 01 23 45 67 89', department: 'Jeunesse', committee: 'Communication', status: 'Actif' },
-    { initials: 'MT', name: 'Mariam Traoré', phone: '+225 05 43 11 08 90', department: 'Louange', committee: 'Accueil', status: 'Nouveau' },
-    { initials: 'JK', name: 'Judith Kouassi', phone: '+225 07 88 19 28 42', department: 'Intercession', committee: 'Prière', status: 'Actif' },
-];
-
-const accounting = [
-    { label: 'Dîmes dominicales', amount: '1 250 000 FCFA', type: 'Dîme' },
-    { label: 'Offrandes mission', amount: '420 000 FCFA', type: 'Offrande' },
-    { label: 'Action sociale', amount: '180 000 FCFA', type: 'Sortie' },
-];
-
-const services = [
-    { name: 'Culte dominical', men: 160, women: 220, youth: 60, children: 34, visitors: 14 },
-    { name: 'Veillée de prière', men: 90, women: 95, youth: 25, children: 6, visitors: 7 },
-];
-
 function Card({ children, className = '' }) {
     return <div className={`rounded-3xl border border-white/60 bg-white/85 p-5 shadow-[0_20px_45px_-30px_rgba(15,23,42,0.45)] backdrop-blur ${className}`}>{children}</div>;
 }
@@ -49,8 +19,20 @@ function Dot({ color }) {
     return <span className={`inline-flex h-2.5 w-2.5 rounded-full ${color}`} />;
 }
 
-export default function Dashboard() {
+export default function Dashboard({
+    kpiCards = [],
+    attendance = [],
+    months = [],
+    finances = [],
+    financeLabels = [],
+    members = [],
+    accounting = [],
+    services = [],
+    documentsCount = 0,
+}) {
     const [open, setOpen] = useState(false);
+
+    const maxAttendance = useMemo(() => Math.max(1, ...attendance), [attendance]);
 
     const donutStyle = useMemo(() => ({
         background: 'conic-gradient(#2563eb 0 38%, #8b5cf6 38% 67%, #d1d5db 67% 100%)',
@@ -68,7 +50,7 @@ export default function Dashboard() {
                             <h2 className="text-xl font-semibold text-gray-900">Tableau de bord principal</h2>
                         </div>
                         <div className="flex gap-2">
-                            <Badge variant="outline">Ce mois</Badge>
+                            <Badge variant="outline">Données réelles</Badge>
                             <Badge variant="outline">USD/FCFA</Badge>
                         </div>
                     </div>
@@ -97,8 +79,8 @@ export default function Dashboard() {
                         </div>
                         <div className="flex h-72 items-end gap-2 overflow-x-auto rounded-2xl bg-slate-50 px-3 pb-4 pt-6">
                             {attendance.map((point, index) => (
-                                <div key={months[index]} className="flex min-w-[48px] flex-1 flex-col items-center gap-2">
-                                    <div className="w-full rounded-t-xl bg-gradient-to-t from-blue-500 to-indigo-300 shadow-sm" style={{ height: `${(point / 110) * 190}px` }} />
+                                <div key={months[index] ?? index} className="flex min-w-[48px] flex-1 flex-col items-center gap-2">
+                                    <div className="w-full rounded-t-xl bg-gradient-to-t from-blue-500 to-indigo-300 shadow-sm" style={{ height: `${(point / maxAttendance) * 190}px` }} />
                                     <span className="text-[11px] text-gray-500">{months[index]}</span>
                                 </div>
                             ))}
@@ -115,15 +97,15 @@ export default function Dashboard() {
                             <div className="relative grid h-44 w-44 place-items-center rounded-full" style={donutStyle}>
                                 <div className="grid h-28 w-28 place-items-center rounded-full bg-white shadow-inner">
                                     <div className="text-center">
-                                        <p className="text-xs uppercase tracking-wide text-gray-500">Ce mois</p>
-                                        <p className="text-xl font-semibold text-gray-900">6,22 M</p>
+                                        <p className="text-xs uppercase tracking-wide text-gray-500">Documents</p>
+                                        <p className="text-xl font-semibold text-gray-900">{documentsCount}</p>
                                     </div>
                                 </div>
                             </div>
                             <div className="mt-4 grid w-full grid-cols-3 gap-2 text-xs">
-                                <div className="rounded-xl bg-white p-2 text-center"><Dot color="bg-blue-600" /> Transfert</div>
-                                <div className="rounded-xl bg-white p-2 text-center"><Dot color="bg-violet-500" /> Mission</div>
-                                <div className="rounded-xl bg-white p-2 text-center"><Dot color="bg-gray-300" /> Autres</div>
+                                <div className="rounded-xl bg-white p-2 text-center"><Dot color="bg-blue-600" /> Données</div>
+                                <div className="rounded-xl bg-white p-2 text-center"><Dot color="bg-violet-500" /> En direct</div>
+                                <div className="rounded-xl bg-white p-2 text-center"><Dot color="bg-gray-300" /> Dashboard</div>
                             </div>
                         </div>
                     </Card>
@@ -133,11 +115,11 @@ export default function Dashboard() {
                     <Card className="xl:col-span-2">
                         <div className="mb-4 flex items-center justify-between">
                             <h3 className="text-base font-semibold text-gray-900">Comparaison budget & dépenses</h3>
-                            <Badge variant="outline">Cette semaine</Badge>
+                            <Badge variant="outline">7 derniers jours</Badge>
                         </div>
                         <div className="grid grid-cols-7 gap-3 rounded-2xl bg-gray-50 p-4">
                             {finances.map((value, index) => (
-                                <div key={financeLabels[index]} className="flex flex-col items-center gap-2">
+                                <div key={financeLabels[index] ?? index} className="flex flex-col items-center gap-2">
                                     <div className="flex h-32 w-full items-end rounded-xl bg-white p-2">
                                         <div className="w-full rounded-lg bg-gradient-to-t from-violet-500 to-blue-400" style={{ height: `${value}%` }} />
                                     </div>
@@ -169,7 +151,7 @@ export default function Dashboard() {
                             </TabsList>
                             <div className="flex w-full gap-2 md:w-auto">
                                 <Input placeholder="Rechercher..." className="md:w-56" />
-                                <Select options={[{ value: 'all', label: 'Tous les départements' }, { value: 'jeunesse', label: 'Jeunesse' }, { value: 'louange', label: 'Louange' }]} />
+                                <Select options={[{ value: 'all', label: 'Tous les départements' }]} />
                             </div>
                         </div>
 
@@ -213,7 +195,7 @@ export default function Dashboard() {
                                 <h3 className="mb-4 text-base font-medium">Dernières opérations comptables</h3>
                                 <div className="space-y-3">
                                     {accounting.map((entry) => (
-                                        <div key={entry.label} className="flex items-center justify-between rounded-xl border border-gray-100 p-3">
+                                        <div key={`${entry.label}-${entry.amount}`} className="flex items-center justify-between rounded-xl border border-gray-100 p-3">
                                             <div>
                                                 <p className="font-medium text-gray-900">{entry.label}</p>
                                                 <p className="text-sm text-gray-500">Montant: {entry.amount}</p>
@@ -244,7 +226,7 @@ export default function Dashboard() {
                         <TabsContent value="documents">
                             <Card>
                                 <h3 className="mb-4 text-base font-medium">Documents</h3>
-                                <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center text-sm text-gray-500">Glissez-déposez vos fichiers ici ou cliquez pour uploader.</div>
+                                <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center text-sm text-gray-500">{documentsCount} document(s) enregistré(s) dans la base.</div>
                             </Card>
                         </TabsContent>
                     </Tabs>
