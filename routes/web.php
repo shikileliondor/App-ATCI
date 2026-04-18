@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/notifications', [SettingsController::class, 'updateNotifications'])->name('settings.notifications');
     Route::post('/settings/security', [SettingsController::class, 'updateSecurity'])->name('settings.security');
     Route::post('/settings/appearance', [SettingsController::class, 'updateAppearance'])->name('settings.appearance');
+    Route::post('/settings/pdf', [SettingsController::class, 'updatePdf'])->name('settings.pdf');
 
     Route::post('/settings/users', [SettingsController::class, 'storeUser'])->name('settings.users.store');
     Route::put('/settings/users/{user}', [SettingsController::class, 'updateUser'])->name('settings.users.update');

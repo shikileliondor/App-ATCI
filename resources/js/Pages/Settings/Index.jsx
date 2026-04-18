@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import MainLayout from '@/Layouts/MainLayout';
 import PageContainer from '@/Layouts/PageContainer';
 
@@ -13,6 +13,7 @@ const sectionItems = [
     { id: 'notifications', label: 'Notifications' },
     { id: 'security', label: 'Sécurité' },
     { id: 'appearance', label: 'Apparence' },
+    { id: 'pdf', label: 'Paramètres PDF' },
 ];
 
 function Card({ title, description, children }) {
@@ -50,10 +51,28 @@ export default function SettingsIndex(props) {
     const [notifications, setNotifications] = useState(props.notifications ?? {});
     const [security, setSecurity] = useState(props.security ?? {});
     const [appearance, setAppearance] = useState(props.appearance ?? {});
+    const [pdf, setPdf] = useState({
+        show_logo: props.pdf?.show_logo ?? true,
+        show_church_name: props.pdf?.show_church_name ?? true,
+        document_title: props.pdf?.document_title ?? 'Fiche de membre',
+    });
 
     const [newUser, setNewUser] = useState({ name: '', email: '', role: props.roles?.[0] ?? 'admin', password: '' });
     const [newEventType, setNewEventType] = useState({ name: '', description: '', is_active: true });
     const logoUrl = useMemo(() => (props.general?.logo_path ? `/storage/${props.general.logo_path}` : null), [props.general?.logo_path]);
+    const [logoPreviewUrl, setLogoPreviewUrl] = useState(null);
+
+    useEffect(() => {
+        if (!general.logo) {
+            setLogoPreviewUrl(null);
+            return undefined;
+        }
+
+        const url = URL.createObjectURL(general.logo);
+        setLogoPreviewUrl(url);
+
+        return () => URL.revokeObjectURL(url);
+    }, [general.logo]);
 
     const submitGeneral = (e) => {
         e.preventDefault();
@@ -65,6 +84,7 @@ export default function SettingsIndex(props) {
     const submitNotifications = (e) => { e.preventDefault(); router.post('/settings/notifications', notifications, { preserveScroll: true }); };
     const submitSecurity = (e) => { e.preventDefault(); router.post('/settings/security', security, { preserveScroll: true }); };
     const submitAppearance = (e) => { e.preventDefault(); router.post('/settings/appearance', appearance, { preserveScroll: true }); };
+    const submitPdf = (e) => { e.preventDefault(); router.post('/settings/pdf', pdf, { preserveScroll: true }); };
 
     const createUser = (e) => {
         e.preventDefault();
@@ -98,10 +118,20 @@ export default function SettingsIndex(props) {
                                 <div className="md:col-span-2">
                                     <Label>Logo (affiché dans la sidebar)</Label>
                                     <div className="flex flex-wrap items-center gap-3">
-                                        {logoUrl ? <img src={logoUrl} className="h-16 w-16 rounded-2xl border border-gray-200 bg-white object-contain p-1 shadow-sm" alt="Logo" /> : <span className="text-sm text-gray-500">Aucun logo défini</span>}
+                                        {(logoPreviewUrl || logoUrl) ? <img src={logoPreviewUrl || logoUrl} className="h-16 w-16 rounded-2xl border border-gray-200 bg-white object-contain p-1 shadow-sm" alt="Logo" /> : <span className="text-sm text-gray-500">Aucun logo défini</span>}
                                         <input type="file" accept="image/*" className="text-sm" onChange={(e) => setGeneral((v) => ({ ...v, logo: e.target.files?.[0] ?? null, remove_logo: false }))} />
                                         {logoUrl ? <button type="button" onClick={() => setGeneral((v) => ({ ...v, remove_logo: true, logo: null }))} className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600">Supprimer logo</button> : null}<p className="w-full text-xs text-gray-500">Astuce : utilisez un logo carré en PNG pour un rendu net dans la navigation.</p>
                                     </div>
+                                    {logoPreviewUrl ? <div className="mt-3 rounded-xl border border-dashed border-blue-200 bg-blue-50/50 p-3">
+                                        <p className="mb-2 text-xs font-medium text-[#1a56a0]">Aperçu du logo uploadé (avant enregistrement)</p>
+                                        <div className="flex items-center gap-3 rounded-lg bg-white p-2">
+                                            <img src={logoPreviewUrl} alt="Aperçu logo uploadé" className="h-12 w-12 rounded-lg border border-gray-200 object-contain p-1" />
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-800">{general.church_name || 'Nom de l’église'}</p>
+                                                <p className="text-xs text-gray-500">{general.email || 'email@eglise.com'}</p>
+                                            </div>
+                                        </div>
+                                    </div> : null}
                                 </div>
                                 <div className="md:col-span-2"><button className="rounded-xl bg-[#1a56a0] px-4 py-2 text-sm font-medium text-white">Enregistrer</button></div>
                             </form>
@@ -180,6 +210,29 @@ export default function SettingsIndex(props) {
                                 <div><Label>Thème</Label><select value={appearance.theme ?? 'light'} onChange={(e) => setAppearance((v) => ({ ...v, theme: e.target.value }))} className="w-full rounded-xl border-gray-300"><option value="light">Clair</option><option value="dark">Sombre</option></select></div>
                                 <div><Label>Couleur principale</Label><input type="color" value={appearance.primary_color ?? '#1a56a0'} onChange={(e) => setAppearance((v) => ({ ...v, primary_color: e.target.value }))} className="h-10 w-24 rounded-lg border-gray-300" /></div>
                                 <div className="md:col-span-2"><button className="rounded-xl bg-[#1a56a0] px-4 py-2 text-sm font-medium text-white">Enregistrer</button></div>
+                            </form>
+                        </Card> : null}
+
+                        {active === 'pdf' ? <Card title="Paramètres document PDF" description="Configurer le rendu des fiches PDF de membre.">
+                            <form onSubmit={submitPdf} className="space-y-4">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={pdf.show_logo} onChange={(e) => setPdf((v) => ({ ...v, show_logo: e.target.checked }))} className="rounded border-gray-300 text-[#1a56a0]" />Afficher le logo</label>
+                                    <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={pdf.show_church_name} onChange={(e) => setPdf((v) => ({ ...v, show_church_name: e.target.checked }))} className="rounded border-gray-300 text-[#1a56a0]" />Afficher le nom de l'église</label>
+                                </div>
+                                <div>
+                                    <Label>Titre du document</Label>
+                                    <input value={pdf.document_title} onChange={(e) => setPdf((v) => ({ ...v, document_title: e.target.value }))} className="w-full rounded-xl border-gray-300 text-sm" />
+                                </div>
+                                <div className="rounded-xl border border-dashed border-blue-200 bg-white p-3 text-xs text-gray-600">
+                                    <div className="flex items-center gap-3">
+                                        {pdf.show_logo && (logoPreviewUrl || logoUrl) ? <img src={logoPreviewUrl || logoUrl} alt="Logo PDF" className="h-10 w-10 rounded-md border border-gray-200 object-contain p-1" /> : null}
+                                        <div>
+                                            <p className="font-medium text-gray-800">{pdf.document_title || 'Fiche de membre'}</p>
+                                            {pdf.show_church_name ? <p>{general.church_name || 'Nom de l\'église non défini'}</p> : null}
+                                        </div>
+                                    </div>
+                                </div>
+                                <button className="rounded-xl bg-[#1a56a0] px-4 py-2 text-sm font-medium text-white">Enregistrer</button>
                             </form>
                         </Card> : null}
                     </div>

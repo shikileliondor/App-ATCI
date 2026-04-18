@@ -36,6 +36,7 @@ export default function MainLayout({ title, subtitle, actionLabel, onAction, chi
                     onAction={onAction}
                     onOpenSidebar={() => setIsSidebarOpen(true)}
                     userName={auth?.user?.name ?? 'Utilisateur'}
+                    userEmail={auth?.user?.email ?? ''}
                     userInitials={userInitials || 'U'}
                     branding={branding}
                 />
